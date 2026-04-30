@@ -205,23 +205,16 @@ export function mountGame(host, levelId) {
 
   function showRoundResult(success, expected) {
     return new Promise((resolve) => {
-      if (success) {
-        stage.innerHTML = `
-          <div class="result success">
-            <div class="result-icon">✓</div>
-            <div class="result-text">Bravo&nbsp;! <strong>${NOTES_FR[expected]}</strong> correctement joué.</div>
-          </div>
-        `;
-        setTimeout(resolve, 1200);
-        return;
-      }
+      const kind = success ? 'success' : 'failure';
+      const icon = success ? '✓' : '✗';
+      const message = success
+        ? `Bravo&nbsp;! <strong>${NOTES_FR[expected]}</strong> — voici toutes ses positions sur le manche :`
+        : `Note attendue : <strong>${NOTES_FR[expected]}</strong>. Voici toutes ses positions sur le manche :`;
 
       stage.innerHTML = `
-        <div class="result failure">
-          <div class="result-icon">✗</div>
-          <div class="result-text">
-            Note attendue : <strong>${NOTES_FR[expected]}</strong>. Voici toutes ses positions sur le manche :
-          </div>
+        <div class="result ${kind}">
+          <div class="result-icon">${icon}</div>
+          <div class="result-text">${message}</div>
           <div class="result-fretboard"></div>
           <button class="btn-secondary js-next">Suivante</button>
         </div>
