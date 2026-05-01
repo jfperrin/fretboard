@@ -4,6 +4,7 @@ import { mountHome } from './views/home.js';
 import { mountGame } from './views/game.js';
 import { mountLevels } from './views/levels.js';
 import { mountChords } from './views/chords.js';
+import { mountTriads } from './views/triads.js';
 import { isUnlocked, MAX_LEVEL } from './progression.js';
 
 const view = document.getElementById('view');
@@ -21,9 +22,10 @@ function parseGameLevel(hash) {
 }
 
 function setActive(hash) {
-  const navHash = hash.startsWith('#/game')    ? '#/game'
-                : hash.startsWith('#/manche')  ? '#/manche'
-                : hash.startsWith('#/accords') ? '#/accords'
+  const navHash = hash.startsWith('#/game')     ? '#/game'
+                : hash.startsWith('#/manche')   ? '#/manche'
+                : hash.startsWith('#/accords')  ? '#/accords'
+                : hash.startsWith('#/triades')  ? '#/triades'
                 : null;
   topLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === navHash));
   body.classList.toggle('is-landing', hash === '#/' || hash === '');
@@ -45,6 +47,10 @@ function route() {
   }
   if (hash === '#/accords') {
     cleanup = mountChords(view) || null;
+    return;
+  }
+  if (hash === '#/triades') {
+    cleanup = mountTriads(view) || null;
     return;
   }
   if (hash === '#/game') {
@@ -73,6 +79,7 @@ if (import.meta.hot) {
       './views/game.js',
       './views/levels.js',
       './views/chords.js',
+      './views/triads.js',
       './fretboard.js',
       './notes.js',
       './audio.js',
