@@ -108,14 +108,14 @@ body.is-landing.topbar-revealed .topbar {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  /* 33.3333% = 1 frette / 3 liens — ajuster si le nombre de liens change */
+  /* 25% = 1 frette / 4 liens — ajuster si le nombre de liens change */
   background:
     repeating-linear-gradient(
       90deg,
       transparent,
-      transparent calc(33.3333% - 1px),
-      rgba(255, 255, 255, 0.055) calc(33.3333% - 1px),
-      rgba(255, 255, 255, 0.055) 33.3333%
+      transparent calc(25% - 1px),
+      rgba(255, 255, 255, 0.055) calc(25% - 1px),
+      rgba(255, 255, 255, 0.055) 25%
     ),
     linear-gradient(180deg, rgba(139, 90, 43, 0.18), rgba(100, 60, 20, 0.10));
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -143,12 +143,12 @@ body.is-landing.topbar-revealed .topbar {
   justify-content: center;
   gap: 5px;
   padding: 0 18px;
-  height: 72px;
-  max-width: 90px;
+  height: 90px;
+  max-width: 120px;
   text-decoration: none;
   color: var(--fg-dim);
   font-size: 0.78rem;
-  font-weight: 500;
+  font-weight: 300;
   line-height: 1.5;
   text-align: center;
   border: none;
@@ -196,7 +196,7 @@ body.is-landing.topbar-revealed .topbar {
 
 @media (max-width: 520px) {
   .topbar { padding: 0 16px; }
-  .topbar-links a { padding: 0 10px; font-size: 0.72rem; height: 60px; }
+  .topbar-links a { padding: 0 10px; font-size: 0.72rem; height: 76px; }
 }
 
 .hero {
@@ -1440,4 +1440,109 @@ body.is-landing.topbar-revealed .topbar {
   color: var(--fg);
   font-weight: 700;
   font-size: 0.95rem;
+}
+
+/* ── Triades ── */
+.triads-view {
+  padding: 32px clamp(16px, 4vw, 48px);
+  max-width: 900px;
+  margin: 0 auto;
+}
+.triads-title {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0 0 4px;
+}
+.triads-subtitle {
+  color: var(--fg-dim);
+  font-size: 0.9rem;
+  margin: 0 0 28px;
+}
+.triads-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.triads-control-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.triads-control-label {
+  color: var(--fg-dim);
+  font-size: 0.85rem;
+  min-width: 52px;
+}
+.triads-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.triads-quality {
+  display: flex;
+  gap: 8px;
+}
+.quality-btn {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-dim);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+}
+.quality-btn:hover {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.05);
+}
+.quality-btn.active {
+  color: #1a0f00;
+  background: linear-gradient(135deg, var(--accent), #e89320);
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(245, 177, 74, 0.25);
+}
+.triads-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.8rem;
+  color: var(--fg-dim);
+  margin-bottom: 28px;
+}
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.legend-root  { background: #f5b14a; }
+.legend-third { background: #56c2ff; }
+.legend-fifth { background: rgba(224, 224, 224, 0.9); border: 1px solid #aaa; }
+.triads-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.triad-group-header {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fg-dim);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+.triad-open-notes {
+  font-weight: 400;
+  opacity: 0.7;
+}
+.triad-board-container {
+  overflow-x: auto;
+}
+.triad-board-container .fretboard-svg {
+  min-width: 600px;
 }
