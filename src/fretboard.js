@@ -267,7 +267,7 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
         }).filter(Boolean);
         if (pts.length === 0) continue;
 
-        const pad = 16;
+        const pad = 24;
         const xMin = Math.min(...pts.map(p => p.cx));
         const xMax = Math.max(...pts.map(p => p.cx));
         const yMin = Math.min(...pts.map(p => p.cy));
