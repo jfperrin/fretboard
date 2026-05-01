@@ -346,6 +346,7 @@ export function mountLanding(host) {
       const fade = Math.max(0, 1 - y / 500);
       hero.style.opacity = String(fade);
     }
+    document.body.classList.toggle('topbar-revealed', y > 360);
     ticking = false;
   }
   function onScroll() {
@@ -358,6 +359,7 @@ export function mountLanding(host) {
 
   return () => {
     window.removeEventListener('scroll', onScroll);
+    document.body.classList.remove('topbar-revealed');
     window.scrollTo({ top: 0 });
   };
 }
