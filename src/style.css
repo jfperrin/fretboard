@@ -61,26 +61,6 @@ body.is-landing .footer {
   top: 0;
   z-index: 50;
 }
-body.is-landing .topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: transparent;
-  border-bottom-color: transparent;
-  margin-bottom: 0;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity 280ms var(--ease), transform 280ms var(--ease), background 280ms var(--ease), border-color 280ms var(--ease);
-}
-body.is-landing.topbar-revealed .topbar {
-  pointer-events: auto;
-  opacity: 1;
-  transform: translateY(0);
-  background: rgba(10, 13, 18, 0.7);
-  border-bottom-color: var(--border);
-}
 
 .topbar-logo {
   display: flex;
