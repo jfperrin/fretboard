@@ -240,11 +240,12 @@ export function mountLanding(host) {
           Apprends les notes du manche en notation française.
           Visualise, écoute, joue&nbsp;— directement dans le navigateur.
         </p>
-        <div class="landing-cta-row">
-          <a class="btn-primary" href="#/manche">Ouvrir le visualiseur</a>
-          <a class="btn-ghost" href="#/accords">Roue d'accords</a>
-          <a class="btn-ghost" href="#/game">Jeu d'oreille</a>
-        </div>
+        <nav class="landing-nav" aria-label="Navigation rapide">
+          <a href="#/manche">Visualiseur<br>de manche</a>
+          <a href="#/accords">Roue<br>d'accords</a>
+          <a href="#/game">Jeu<br>d'oreille</a>
+          <a href="#/triades">Triades<br>d'accord</a>
+        </nav>
         <div class="landing-scroll-hint" aria-hidden="true">
           <span>Découvrir</span>
           <span class="landing-scroll-arrow"></span>
