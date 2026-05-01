@@ -108,6 +108,7 @@ body.is-landing.topbar-revealed .topbar {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
+  /* 33.3333% = 1 frette / 3 liens — ajuster si le nombre de liens change */
   background:
     repeating-linear-gradient(
       90deg,
@@ -163,7 +164,7 @@ body.is-landing.topbar-revealed .topbar {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.10);
-  transition: all 200ms var(--ease);
+  transition: width 200ms var(--ease), height 200ms var(--ease), background 200ms var(--ease), box-shadow 200ms var(--ease), border-color 200ms var(--ease);
   flex-shrink: 0;
 }
 .topbar-links a:hover {
