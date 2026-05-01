@@ -14,7 +14,7 @@ function el(name, attrs = {}, children = []) {
 
 const STRING_WIDTHS = [3.6, 3.0, 2.4, 1.8, 1.4, 1.1]; // grave -> aiguë
 
-export function createFretboard(container, { frets = 15 } = {}) {
+export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 2, 3, 4, 5] } = {}) {
   container.innerHTML = '';
 
   const VB_W = 1200;
@@ -33,9 +33,9 @@ export function createFretboard(container, { frets = 15 } = {}) {
   const fretX = (n) => padLeft + ((1 - Math.pow(2, -n / 12)) / totalShrink) * boardW;
 
   // Y des cordes : la grave en haut visuellement (convention diagramme manche).
-  const stringCount = TUNING.length;
-  const stringY = (i) =>
-    padTop + ((stringCount - 1 - i) * boardH) / (stringCount - 1);
+  const stringCount = stringIndices.length;
+  const stringY = (localIdx) =>
+    padTop + ((stringCount - 1 - localIdx) * boardH) / (stringCount - 1);
 
   const svg = el('svg', {
     viewBox: `0 0 ${VB_W} ${VB_H}`,
@@ -128,15 +128,15 @@ export function createFretboard(container, { frets = 15 } = {}) {
 
   // Cordes + labels
   for (let s = 0; s < stringCount; s++) {
+    const tuningIdx = stringIndices[s];
     const y = stringY(s);
     svg.appendChild(el('line', {
       x1: padLeft - 8, y1: y, x2: VB_W - padRight, y2: y,
-      stroke: '#d8dde6', 'stroke-width': STRING_WIDTHS[s],
+      stroke: '#d8dde6', 'stroke-width': STRING_WIDTHS[tuningIdx],
       'stroke-linecap': 'round',
       opacity: 0.92,
       filter: 'url(#softShadow)',
     }));
-    // Étiquette corde
     svg.appendChild(el('text', {
       x: padLeft - 22, y: y + 4,
       'text-anchor': 'middle',
@@ -144,7 +144,7 @@ export function createFretboard(container, { frets = 15 } = {}) {
       'font-size': 13,
       'font-weight': 700,
       fill: '#f5b14a',
-    })).textContent = STRING_LABELS[s];
+    })).textContent = STRING_LABELS[tuningIdx];
   }
 
   // Couche de markers (au-dessus)
@@ -155,23 +155,24 @@ export function createFretboard(container, { frets = 15 } = {}) {
   const feedbackLayer = el('g', { class: 'feedback-layer' });
   svg.appendChild(feedbackLayer);
 
-  function positionXY(s, f) {
+  function positionXY(localIdx, f) {
     const cx = f === 0 ? padLeft - 24 : (fretX(f - 1) + fretX(f)) / 2;
-    const cy = stringY(s);
+    const cy = stringY(localIdx);
     return { cx, cy };
   }
 
   // Hit zones cliquables : un cercle invisible par position
   const hitLayer = el('g', { class: 'hit-layer' });
-  for (let s = 0; s < stringCount; s++) {
+  for (let local = 0; local < stringCount; local++) {
+    const tuningIdx = stringIndices[local];
     for (let f = 0; f <= frets; f++) {
       const cx = f === 0 ? padLeft - 24 : (fretX(f - 1) + fretX(f)) / 2;
-      const cy = stringY(s);
+      const cy = stringY(local);
       const hit = el('circle', {
         cx, cy, r: 14,
         fill: 'transparent',
         class: 'fret-hit',
-        'data-string': s,
+        'data-string': tuningIdx,
         'data-fret': f,
         style: 'cursor: pointer;',
       });
@@ -192,13 +193,12 @@ export function createFretboard(container, { frets = 15 } = {}) {
     highlightNote(noteIndex) {
       markersLayer.innerHTML = '';
       if (noteIndex === null || noteIndex === undefined) return;
-      for (let s = 0; s < stringCount; s++) {
+      for (let local = 0; local < stringCount; local++) {
+        const s = stringIndices[local];
         for (let f = 0; f <= frets; f++) {
           const n = noteAtFret(s, f);
           if (n.noteIndex !== noteIndex) continue;
-          const cx = f === 0 ? padLeft - 24 : (fretX(f - 1) + fretX(f)) / 2;
-          const cy = stringY(s);
-
+          const { cx, cy } = positionXY(local, f);
           const g = el('g', {
             class: 'marker',
             transform: `translate(${cx} ${cy})`,
@@ -239,7 +239,9 @@ export function createFretboard(container, { frets = 15 } = {}) {
       });
     },
     flashPosition({ stringIdx, fret, kind }) {
-      const { cx, cy } = positionXY(stringIdx, fret);
+      const localIdx = stringIndices.indexOf(stringIdx);
+      if (localIdx === -1) return;
+      const { cx, cy } = positionXY(localIdx, fret);
       const g = el('g', {
         class: `fretboard-feedback fretboard-feedback-${kind}`,
         transform: `translate(${cx} ${cy})`,
@@ -250,6 +252,34 @@ export function createFretboard(container, { frets = 15 } = {}) {
     },
     clearMarkers() {
       markersLayer.innerHTML = '';
+    },
+    highlightTriad(positions) {
+      markersLayer.innerHTML = '';
+      const ROLE_STYLE = {
+        root:  { fill: '#f5b14a',               stroke: '#c07010', textFill: '#1a0f00' },
+        third: { fill: '#56c2ff',               stroke: '#2b8fd6', textFill: '#001a2a' },
+        fifth: { fill: 'rgba(224,224,224,0.9)', stroke: '#aaaaaa', textFill: '#1a1a1a' },
+      };
+      for (const { stringIdx, fret, role, label } of positions) {
+        const localIdx = stringIndices.indexOf(stringIdx);
+        if (localIdx === -1) continue;
+        const { cx, cy } = positionXY(localIdx, fret);
+        const s = ROLE_STYLE[role];
+        const g = el('g', { class: 'marker', transform: `translate(${cx} ${cy})` });
+        g.appendChild(el('circle', {
+          r: 14, fill: s.fill, stroke: s.stroke, 'stroke-width': 1.5,
+          filter: 'url(#softShadow)',
+        }));
+        const txt = el('text', {
+          'text-anchor': 'middle', y: 4,
+          'font-family': 'JetBrains Mono, monospace',
+          'font-size': 11, 'font-weight': 700,
+          fill: s.textFill,
+        });
+        txt.textContent = label;
+        g.appendChild(txt);
+        markersLayer.appendChild(g);
+      }
     },
   };
 
