@@ -242,8 +242,11 @@ export function mountLanding(host) {
         </p>
         <nav class="landing-nav" aria-label="Navigation rapide">
           <a href="#/manche">Visualiseur<br>de manche</a>
+          <span class="neck-inlay" aria-hidden="true"></span>
           <a href="#/accords">Roue<br>d'accords</a>
+          <span class="neck-inlay" aria-hidden="true"></span>
           <a href="#/game">Jeu<br>d'oreille</a>
+          <span class="neck-inlay" aria-hidden="true"></span>
           <a href="#/triades">Triades<br>d'accord</a>
         </nav>
         <div class="landing-scroll-hint" aria-hidden="true">
