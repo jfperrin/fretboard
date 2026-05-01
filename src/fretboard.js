@@ -267,15 +267,21 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
         }).filter(Boolean);
         if (pts.length === 0) continue;
 
-        const pad = 24;
-        const xMin = Math.min(...pts.map(p => p.cx));
-        const xMax = Math.max(...pts.map(p => p.cx));
-        const yMin = Math.min(...pts.map(p => p.cy));
-        const yMax = Math.max(...pts.map(p => p.cy));
+        const fretGap = 8;
+        const minFret = Math.min(...voicing.map(p => p.fret));
+        const maxFret = Math.max(...voicing.map(p => p.fret));
+        // Ancrage sur les fils de frette pour garantir le gap quelle que soit la densité
+        const xLeft  = minFret === 0
+          ? Math.min(...pts.map(p => p.cx)) - 18
+          : fretX(minFret - 1) + fretGap;
+        const xRight = fretX(maxFret) - fretGap;
+        const yPad = 20;
+        const yTop    = Math.min(...pts.map(p => p.cy)) - yPad;
+        const yBottom = Math.max(...pts.map(p => p.cy)) + yPad;
         markersLayer.appendChild(el('rect', {
-          x: xMin - pad, y: yMin - pad,
-          width: xMax - xMin + 2 * pad,
-          height: yMax - yMin + 2 * pad,
+          x: xLeft, y: yTop,
+          width: xRight - xLeft,
+          height: yBottom - yTop,
           rx: 8,
           fill: 'none',
           stroke: 'rgba(255, 255, 255, 0.45)',
