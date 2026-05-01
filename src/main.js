@@ -3,6 +3,7 @@ import { mountLanding } from './views/landing.js';
 import { mountHome } from './views/home.js';
 import { mountGame } from './views/game.js';
 import { mountLevels } from './views/levels.js';
+import { mountChords } from './views/chords.js';
 import { isUnlocked, MAX_LEVEL } from './progression.js';
 
 const view = document.getElementById('view');
@@ -20,8 +21,9 @@ function parseGameLevel(hash) {
 }
 
 function setActive(hash) {
-  const navHash = hash.startsWith('#/game') ? '#/game'
-                : hash.startsWith('#/manche') ? '#/manche'
+  const navHash = hash.startsWith('#/game')    ? '#/game'
+                : hash.startsWith('#/manche')  ? '#/manche'
+                : hash.startsWith('#/accords') ? '#/accords'
                 : null;
   topLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === navHash));
   body.classList.toggle('is-landing', hash === '#/' || hash === '');
@@ -39,6 +41,10 @@ function route() {
   }
   if (hash === '#/manche') {
     cleanup = mountHome(view) || null;
+    return;
+  }
+  if (hash === '#/accords') {
+    cleanup = mountChords(view) || null;
     return;
   }
   if (hash === '#/game') {
@@ -66,6 +72,7 @@ if (import.meta.hot) {
       './views/home.js',
       './views/game.js',
       './views/levels.js',
+      './views/chords.js',
       './fretboard.js',
       './notes.js',
       './audio.js',

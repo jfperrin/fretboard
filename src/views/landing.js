@@ -49,6 +49,118 @@ function buildMiniFretboard() {
   `;
 }
 
+function buildFeaturedWheelIllu() {
+  // Roue carrée détaillée pour le tile principal du bento.
+  const size = 260;
+  const cx = size / 2, cy = size / 2;
+  const rOut = 118, rMid = 86, rIn = 54, rCenter = 36;
+  const NAMES = ['Do', 'Sol', 'Ré', 'La', 'Mi', 'Si', 'Fa♯', 'Ré♭', 'La♭', 'Mi♭', 'Si♭', 'Fa'];
+
+  const minSectors = [], majSectors = [], labels = [];
+  const annular = (a1, a2, r1, r2) =>
+    `M ${(cx + Math.cos(a1) * r1).toFixed(1)} ${(cy + Math.sin(a1) * r1).toFixed(1)} ` +
+    `L ${(cx + Math.cos(a1) * r2).toFixed(1)} ${(cy + Math.sin(a1) * r2).toFixed(1)} ` +
+    `A ${r2} ${r2} 0 0 1 ${(cx + Math.cos(a2) * r2).toFixed(1)} ${(cy + Math.sin(a2) * r2).toFixed(1)} ` +
+    `L ${(cx + Math.cos(a2) * r1).toFixed(1)} ${(cy + Math.sin(a2) * r1).toFixed(1)} ` +
+    `A ${r1} ${r1} 0 0 0 ${(cx + Math.cos(a1) * r1).toFixed(1)} ${(cy + Math.sin(a1) * r1).toFixed(1)} Z`;
+
+  for (let i = 0; i < 12; i++) {
+    const aMid = (i * 30 - 90) * Math.PI / 180;
+    const a1   = (i * 30 - 15 - 90) * Math.PI / 180;
+    const a2   = (i * 30 + 15 - 90) * Math.PI / 180;
+    const hue  = (i * 30) % 360;
+    minSectors.push(`<path d="${annular(a1, a2, rIn, rMid)}" fill="hsl(${hue},42%,38%)" stroke="rgba(10,13,18,0.4)" stroke-width="0.6" />`);
+    majSectors.push(`<path d="${annular(a1, a2, rMid, rOut)}" fill="hsl(${hue},58%,56%)" stroke="rgba(10,13,18,0.4)" stroke-width="0.6" />`);
+    const xL = cx + Math.cos(aMid) * ((rMid + rOut) / 2);
+    const yL = cy + Math.sin(aMid) * ((rMid + rOut) / 2);
+    labels.push(`<text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="rgba(10,13,18,0.92)" font-family="JetBrains Mono, monospace" font-weight="700" font-size="12">${NAMES[i]}</text>`);
+  }
+
+  const fmt = (r, deg) => {
+    const a = (deg - 90) * Math.PI / 180;
+    return `${(cx + Math.cos(a) * r).toFixed(1)} ${(cy + Math.sin(a) * r).toFixed(1)}`;
+  };
+  const mask = `
+    <path d="M ${fmt(rMid, -45)}
+      A ${rMid} ${rMid} 0 0 1 ${fmt(rMid, -15)}
+      L ${fmt(rOut, -15)}
+      A ${rOut} ${rOut} 0 0 1 ${fmt(rOut, 15)}
+      L ${fmt(rMid, 15)}
+      A ${rMid} ${rMid} 0 0 1 ${fmt(rMid, 45)}
+      L ${fmt(rIn, 45)}
+      A ${rIn} ${rIn} 0 0 0 ${fmt(rIn, -45)} Z"
+      fill="rgba(245,177,74,0.10)" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"
+      style="filter: drop-shadow(0 0 6px rgba(245,177,74,0.4))" />
+  `;
+
+  return `
+    <svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${minSectors.join('')}
+      ${majSectors.join('')}
+      ${labels.join('')}
+      <circle cx="${cx}" cy="${cy}" r="${rCenter}" fill="var(--bg-1)" stroke="var(--accent)" stroke-width="1.5" />
+      <text x="${cx}" y="${cy - 4}" text-anchor="middle" dominant-baseline="central"
+            fill="var(--fg)" font-family="JetBrains Mono, monospace" font-weight="700" font-size="22">Do</text>
+      <text x="${cx}" y="${cy + 16}" text-anchor="middle" dominant-baseline="central"
+            fill="var(--fg-dim)" font-family="Inter, sans-serif" font-weight="500" font-size="9" letter-spacing="0.12em">MAJEUR</text>
+      ${mask}
+    </svg>
+  `;
+}
+
+function buildChordWheelIllu() {
+  // Mini roue : 3 anneaux x 12 secteurs + masque ambré au sommet.
+  const cx = 140, cy = 55;
+  const rOut = 50, rMid = 38, rIn = 24, rCenter = 12;
+  const sectors = [];
+  for (let i = 0; i < 12; i++) {
+    const a1 = (i * 30 - 15 - 90) * Math.PI / 180;
+    const a2 = (i * 30 + 15 - 90) * Math.PI / 180;
+    const hue = (i * 30) % 360;
+    const ringR = [
+      { rIn: rMid, rOut, sat: 56, lum: 60 },
+      { rIn,       rOut: rMid, sat: 50, lum: 50 },
+    ];
+    for (const { rIn: ri, rOut: ro, sat, lum } of ringR) {
+      const x1 = cx + Math.cos(a1) * ri,  y1 = cy + Math.sin(a1) * ri;
+      const x2 = cx + Math.cos(a1) * ro,  y2 = cy + Math.sin(a1) * ro;
+      const x3 = cx + Math.cos(a2) * ro,  y3 = cy + Math.sin(a2) * ro;
+      const x4 = cx + Math.cos(a2) * ri,  y4 = cy + Math.sin(a2) * ri;
+      sectors.push(
+        `<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} L ${x2.toFixed(1)} ${y2.toFixed(1)} A ${ro} ${ro} 0 0 1 ${x3.toFixed(1)} ${y3.toFixed(1)} L ${x4.toFixed(1)} ${y4.toFixed(1)} A ${ri} ${ri} 0 0 0 ${x1.toFixed(1)} ${y1.toFixed(1)} Z" fill="hsl(${hue}, ${sat}%, ${lum}%)" stroke="rgba(10,13,18,0.35)" stroke-width="0.6" />`
+      );
+    }
+  }
+  // Masque clé : 3 cases majeures (11h, 12h, 1h) + 3 mineures + 1 vii° au sommet.
+  // Polygone unifié pour simplicité visuelle.
+  const fmt = (r, deg) => {
+    const a = (deg - 90) * Math.PI / 180;
+    return `${(cx + Math.cos(a) * r).toFixed(1)} ${(cy + Math.sin(a) * r).toFixed(1)}`;
+  };
+  const mask = `
+    <path d="
+      M ${fmt(rMid, -45)}
+      A ${rMid} ${rMid} 0 0 1 ${fmt(rMid, -15)}
+      L ${fmt(rOut, -15)}
+      A ${rOut} ${rOut} 0 0 1 ${fmt(rOut, 15)}
+      L ${fmt(rMid, 15)}
+      A ${rMid} ${rMid} 0 0 1 ${fmt(rMid, 45)}
+      L ${fmt(rCenter, 45)}
+      A ${rCenter} ${rCenter} 0 0 0 ${fmt(rCenter, -45)}
+      Z"
+      fill="rgba(245,177,74,0.16)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" />
+  `;
+  return `
+    <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${sectors.join('')}
+      <circle cx="${cx}" cy="${cy}" r="${rIn}" fill="var(--bg-1)" stroke="rgba(255,255,255,0.08)" />
+      ${mask}
+      <text x="${cx}" y="${cy + 3}" text-anchor="middle" fill="var(--fg)"
+            font-family="JetBrains Mono, monospace" font-weight="700" font-size="11">Do</text>
+    </svg>
+  `;
+}
+
 function buildEarIllu() {
   // Illustration "jeu d'oreille" : grosse note + onde
   return `
@@ -122,7 +234,7 @@ export function mountLanding(host) {
         ).join('')}
       </div>
       <div class="landing-hero-content parallax-layer" data-speed="0.85">
-        <span class="landing-eyebrow">Visualiseur · Jeu d'oreille</span>
+        <span class="landing-eyebrow">Visualiseur · Roue d'accords · Jeu d'oreille</span>
         <h1 class="landing-title">Fretboard</h1>
         <p class="landing-lede">
           Apprends les notes du manche en notation française.
@@ -130,7 +242,8 @@ export function mountLanding(host) {
         </p>
         <div class="landing-cta-row">
           <a class="btn-primary" href="#/manche">Ouvrir le visualiseur</a>
-          <a class="btn-ghost" href="#/game">Jouer au jeu d'oreille</a>
+          <a class="btn-ghost" href="#/accords">Roue d'accords</a>
+          <a class="btn-ghost" href="#/game">Jeu d'oreille</a>
         </div>
         <div class="landing-scroll-hint" aria-hidden="true">
           <span>Découvrir</span>
@@ -141,35 +254,43 @@ export function mountLanding(host) {
 
     <section class="landing-section landing-modes">
       <header class="section-header">
-        <span class="section-eyebrow">02 · Modes</span>
-        <h2>Choisis ton terrain de jeu</h2>
-        <p class="section-sub">Deux entrées, une seule application sans dépendances.</p>
+        <span class="section-eyebrow">02 · Outils</span>
+        <h2>Visualise. Comprends. Joue.</h2>
+        <p class="section-sub">Trois entrées qui se complètent — pour mémoriser le manche, théoriser les progressions et s'entraîner à l'oreille.</p>
       </header>
 
-      <div class="cta-grid">
-        <a class="cta-card cta-visualiser" href="#/manche">
-          <div class="cta-illu">${buildMiniFretboard()}</div>
-          <div class="cta-body">
-            <span class="cta-tag">Exploration</span>
-            <h3>Visualiseur de manche</h3>
+      <div class="bento-grid">
+        <a class="bento-tile bento-feature cta-accords" href="#/accords">
+          <span class="bento-badge">Nouveau</span>
+          <div class="bento-illu bento-illu-feature">${buildFeaturedWheelIllu()}</div>
+          <div class="bento-body">
+            <span class="bento-tag">Harmonie · Cycle des quintes</span>
+            <h3>Roue d'accords</h3>
             <p>
-              Toutes les positions de chaque note sur 24 frettes, jouées au sampler de guitare.
-              Idéal pour mémoriser le manche et travailler à l'oreille.
+              Aligne ta tonalité sous le masque ambré et lis directement les sept degrés diatoniques&nbsp;:
+              I, ii, iii, IV, V, vi, vii°. Tourne au drag, à la molette, ou clique pour entendre la triade.
             </p>
-            <span class="cta-arrow" aria-hidden="true">→</span>
+            <span class="bento-arrow" aria-hidden="true">→</span>
           </div>
         </a>
 
-        <a class="cta-card cta-jeu" href="#/game">
-          <div class="cta-illu">${buildEarIllu()}</div>
-          <div class="cta-body">
-            <span class="cta-tag">Entraînement</span>
-            <h3>Jeu d'oreille — 10 niveaux</h3>
-            <p>
-              Reconnais et joue les notes au micro. Progression des 7 naturelles vers les 12 demi-tons,
-              avec déblocage palier par palier.
-            </p>
-            <span class="cta-arrow" aria-hidden="true">→</span>
+        <a class="bento-tile cta-visualiser" href="#/manche">
+          <div class="bento-illu">${buildMiniFretboard()}</div>
+          <div class="bento-body">
+            <span class="bento-tag">Exploration</span>
+            <h3>Visualiseur de manche</h3>
+            <p>Toutes les positions de chaque note sur 24 frettes, jouées au sampler de guitare.</p>
+            <span class="bento-arrow" aria-hidden="true">→</span>
+          </div>
+        </a>
+
+        <a class="bento-tile cta-jeu" href="#/game">
+          <div class="bento-illu">${buildEarIllu()}</div>
+          <div class="bento-body">
+            <span class="bento-tag">Entraînement · 10 niveaux</span>
+            <h3>Jeu d'oreille</h3>
+            <p>Reconnais et joue les notes au micro. Progression des 7 naturelles vers les 12 demi-tons.</p>
+            <span class="bento-arrow" aria-hidden="true">→</span>
           </div>
         </a>
       </div>
