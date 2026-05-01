@@ -253,32 +253,55 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
     clearMarkers() {
       markersLayer.innerHTML = '';
     },
-    highlightTriad(positions) {
+    highlightTriads(voicings) {
       markersLayer.innerHTML = '';
       const ROLE_STYLE = {
         root:  { fill: '#f5b14a',               stroke: '#c07010', textFill: '#1a0f00' },
         third: { fill: '#56c2ff',               stroke: '#2b8fd6', textFill: '#001a2a' },
         fifth: { fill: 'rgba(224,224,224,0.9)', stroke: '#aaaaaa', textFill: '#1a1a1a' },
       };
-      for (const { stringIdx, fret, role, label } of positions) {
-        const localIdx = stringIndices.indexOf(stringIdx);
-        if (localIdx === -1) continue;
-        const { cx, cy } = positionXY(localIdx, fret);
-        const s = ROLE_STYLE[role];
-        const g = el('g', { class: 'marker', transform: `translate(${cx} ${cy})` });
-        g.appendChild(el('circle', {
-          r: 14, fill: s.fill, stroke: s.stroke, 'stroke-width': 1.5,
-          filter: 'url(#softShadow)',
+      for (const voicing of voicings) {
+        const pts = voicing.map(({ stringIdx, fret }) => {
+          const localIdx = stringIndices.indexOf(stringIdx);
+          return localIdx === -1 ? null : positionXY(localIdx, fret);
+        }).filter(Boolean);
+        if (pts.length === 0) continue;
+
+        const pad = 16;
+        const xMin = Math.min(...pts.map(p => p.cx));
+        const xMax = Math.max(...pts.map(p => p.cx));
+        const yMin = Math.min(...pts.map(p => p.cy));
+        const yMax = Math.max(...pts.map(p => p.cy));
+        markersLayer.appendChild(el('rect', {
+          x: xMin - pad, y: yMin - pad,
+          width: xMax - xMin + 2 * pad,
+          height: yMax - yMin + 2 * pad,
+          rx: 8,
+          fill: 'none',
+          stroke: 'rgba(255, 255, 255, 0.18)',
+          'stroke-width': 1.5,
         }));
-        const txt = el('text', {
-          'text-anchor': 'middle', y: 4,
-          'font-family': 'JetBrains Mono, monospace',
-          'font-size': 11, 'font-weight': 700,
-          fill: s.textFill,
-        });
-        txt.textContent = label;
-        g.appendChild(txt);
-        markersLayer.appendChild(g);
+
+        for (const { stringIdx, fret, role, label } of voicing) {
+          const localIdx = stringIndices.indexOf(stringIdx);
+          if (localIdx === -1) continue;
+          const { cx, cy } = positionXY(localIdx, fret);
+          const s = ROLE_STYLE[role];
+          const g = el('g', { class: 'marker', transform: `translate(${cx} ${cy})` });
+          g.appendChild(el('circle', {
+            r: 14, fill: s.fill, stroke: s.stroke, 'stroke-width': 1.5,
+            filter: 'url(#softShadow)',
+          }));
+          const txt = el('text', {
+            'text-anchor': 'middle', y: 4,
+            'font-family': 'JetBrains Mono, monospace',
+            'font-size': 11, 'font-weight': 700,
+            fill: s.textFill,
+          });
+          txt.textContent = label;
+          g.appendChild(txt);
+          markersLayer.appendChild(g);
+        }
       }
     },
   };

@@ -114,7 +114,7 @@ export function mountTriads(host) {
     boardContainer.className = 'triad-board-container';
     wrapper.appendChild(boardContainer);
     groupsContainer.appendChild(wrapper);
-    const board = createFretboard(boardContainer, { frets: 15, stringIndices: group.indices });
+    const board = createFretboard(boardContainer, { frets: 15 });
     board.onPositionClick(({ stringIdx, fret }) => {
       const voicings = findVoicings(group.indices, selectedRoot, TRIAD_INTERVALS[selectedQuality]);
       for (const voicing of voicings) {
@@ -135,15 +135,7 @@ export function mountTriads(host) {
     const intervals = TRIAD_INTERVALS[selectedQuality];
     STRING_GROUPS.forEach((group, i) => {
       const voicings = findVoicings(group.indices, selectedRoot, intervals);
-      const seen = new Set();
-      const positions = [];
-      for (const v of voicings) {
-        for (const p of v) {
-          const key = `${p.stringIdx}-${p.fret}`;
-          if (!seen.has(key)) { seen.add(key); positions.push(p); }
-        }
-      }
-      boards[i].highlightTriad(positions);
+      boards[i].highlightTriads(voicings);
     });
   }
 
