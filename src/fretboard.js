@@ -278,8 +278,8 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
           height: yMax - yMin + 2 * pad,
           rx: 8,
           fill: 'none',
-          stroke: 'rgba(255, 255, 255, 0.18)',
-          'stroke-width': 1.5,
+          stroke: 'rgba(255, 255, 255, 0.45)',
+          'stroke-width': 2.5,
         }));
 
         for (const { stringIdx, fret, role, label } of voicing) {
