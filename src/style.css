@@ -115,9 +115,9 @@ body.is-landing.topbar-revealed .topbar {
   border-radius: 10px;
   overflow: hidden;
   background:
-    linear-gradient(to bottom, transparent calc(50% - 33.40px),  rgba(232, 222, 195, 0.62) calc(50% - 33.40px),  rgba(232, 222, 195, 0.62) calc(50% - 32.60px),  transparent calc(50% - 32.60px)),
-    linear-gradient(to bottom, transparent calc(50% - 19.475px), rgba(232, 222, 195, 0.64) calc(50% - 19.475px), rgba(232, 222, 195, 0.64) calc(50% - 18.525px), transparent calc(50% - 18.525px)),
-    linear-gradient(to bottom, transparent calc(50% - 5.55px),   rgba(232, 222, 195, 0.66) calc(50% - 5.55px),   rgba(232, 222, 195, 0.66) calc(50% - 4.45px),   transparent calc(50% - 4.45px)),
+    linear-gradient(to bottom, transparent calc(50% - 33.50px),  rgba(248, 240, 215, 0.85) calc(50% - 33.50px),  rgba(248, 240, 215, 0.85) calc(50% - 32.50px),  transparent calc(50% - 32.50px)),
+    linear-gradient(to bottom, transparent calc(50% - 19.50px),  rgba(248, 240, 215, 0.82) calc(50% - 19.50px),  rgba(248, 240, 215, 0.82) calc(50% - 18.50px),  transparent calc(50% - 18.50px)),
+    linear-gradient(to bottom, transparent calc(50% - 5.50px),   rgba(240, 232, 205, 0.78) calc(50% - 5.50px),   rgba(240, 232, 205, 0.78) calc(50% - 4.50px),   transparent calc(50% - 4.50px)),
     linear-gradient(to bottom, transparent calc(50% + 4.45px),   rgba(220, 210, 180, 0.46) calc(50% + 4.45px),   rgba(220, 210, 180, 0.46) calc(50% + 5.55px),   transparent calc(50% + 5.55px)),
     linear-gradient(to bottom, transparent calc(50% + 18.35px),  rgba(220, 210, 180, 0.50) calc(50% + 18.35px),  rgba(220, 210, 180, 0.50) calc(50% + 19.65px),  transparent calc(50% + 19.65px)),
     linear-gradient(to bottom, transparent calc(50% + 32.25px),  rgba(220, 210, 180, 0.55) calc(50% + 32.25px),  rgba(220, 210, 180, 0.55) calc(50% + 33.75px),  transparent calc(50% + 33.75px)),
@@ -143,14 +143,14 @@ body.is-landing.topbar-revealed .topbar {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 12px;
+  padding: 0 8px;
   height: 78px;
-  width: 96px;
+  width: 80px;
   text-decoration: none;
   color: rgba(232, 236, 243, 0.50);
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.45;
   text-align: center;
   transition: color 200ms var(--ease), background 200ms var(--ease);
 }
@@ -179,7 +179,7 @@ body.is-landing.topbar-revealed .topbar {
 
 /* Blocs inlay trapézoïdaux ivoire */
 .neck-inlay {
-  flex: 0 0 96px;
+  flex: 0 0 80px;
   position: relative;
   z-index: 1;
   display: flex;
@@ -189,19 +189,22 @@ body.is-landing.topbar-revealed .topbar {
 .neck-inlay::before {
   content: '';
   display: block;
-  width: 18px;
-  height: 48px;
-  background: linear-gradient(165deg,
-    #f6f0dc 0%,
-    #e8d8b0 35%,
-    #d4be88 65%,
-    #beaa70 100%
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%,
+    #faf3df 0%,
+    #ecd9b0 40%,
+    #cdb37e 75%,
+    #a48a55 100%
   );
-  clip-path: polygon(10% 2%, 90% 2%, 93% 98%, 7% 98%);
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.70));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+  filter: drop-shadow(0 1.5px 3px rgba(0, 0, 0, 0.55));
 }
 
-.landing-nav { display: inline-flex; margin-top: 8px; }
+.landing-nav { display: inline-flex; width: 562px; margin-top: 8px; }
 
 /* ── Tête de guitare (3+3) accolée à gauche du menu-manche ── */
 .landing-neck {
@@ -240,13 +243,18 @@ body.is-landing.topbar-revealed .topbar {
   100% { transform: rotate(0deg)   scale(1); }
 }
 
-@media (max-width: 768px) {
-  .topbar { padding: 8px 16px; }
-  .topbar-links a, .landing-nav a { padding: 0 8px; width: 84px; font-size: 0.7rem; height: 70px; }
-  .neck-inlay { flex: 0 0 84px; }
-  .neck-inlay::before { width: 16px; height: 42px; }
+/* Tête masquée sous 1024 px : sinon manche + tête (≈ 820 px) déborde du
+   contenu hero centré une fois le padding latéral retranché. */
+@media (max-width: 1024px) {
   .headstock { display: none; }
   .landing-neck .landing-nav { border-radius: 10px; border-left: 1px solid rgba(0, 0, 0, 0.5); }
+}
+
+@media (max-width: 768px) {
+  .topbar { padding: 8px 16px; }
+  .topbar-links a, .landing-nav a { width: 72px; height: 70px; font-size: 0.65rem; }
+  .neck-inlay { flex: 0 0 72px; }
+  .neck-inlay::before { width: 14px; height: 14px; }
 }
 
 .hero {
