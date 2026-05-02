@@ -1,5 +1,8 @@
 // Landing page : hero parallaxe à plusieurs couches + CTA + pitch.
 
+import { TUNING, STRING_LABELS, midiOf, frequencyOf } from '../notes.js';
+import { playNote } from '../audio.js';
+
 const NATURALS = ['Do', 'Ré', 'Mi', 'Fa', 'Sol', 'La', 'Si'];
 
 function buildMiniFretboard() {
@@ -186,6 +189,82 @@ function buildEarIllu() {
   `;
 }
 
+function buildHeadstock() {
+  // Tête Les Paul stylisée (3+3) accolée à gauche du menu-manche.
+  // viewBox 260×110 : silhouette + 6 mécaniques + 6 cordes vers le sillet.
+  const w = 260, h = 110;
+  const silhouette = `
+    M ${w} 16
+    L ${w} 94
+    L 60 102
+    Q 16 102 8 84
+    L 8 64
+    Q 36 55 8 46
+    L 8 26
+    Q 16 8 60 8
+    L ${w} 16 Z
+  `;
+  // Grille interne : 8 cases de largeur égale (260/8 = 32.5).
+  // Mécaniques sur les cases 3, 5, 7 (centres x = 81.25, 146.25, 211.25),
+  // rentrées à ~25 px des bords haut/bas (top y=35, bottom y=75).
+  // Mi grave en bas-droite, Mi aigu en haut-droite, encoches comptées depuis le bas.
+  const pegs = [
+    { x: 211.25, y: 75 },  // Mi grave (bas droite)
+    { x: 146.25, y: 75 },  // La       (bas milieu)
+    { x: 81.25,  y: 75 },  // Ré       (bas gauche)
+    { x: 81.25,  y: 35 },  // Sol      (haut gauche)
+    { x: 146.25, y: 35 },  // Si       (haut milieu)
+    { x: 211.25, y: 35 },  // Mi aigu  (haut droite)
+  ];
+  // Sillet : Mi grave en bas (1re encoche depuis le bas) → Mi aigu en haut (6e).
+  const nutY = [88, 74, 60, 50, 36, 22];
+  const stringWidths = [1.05, 0.9, 0.78, 0.68, 0.58, 0.48];
+
+  const strings = pegs.map((p, i) =>
+    `<line x1="${p.x}" y1="${p.y}" x2="${w - 4}" y2="${nutY[i]}"
+           stroke="rgba(220,210,180,0.72)" stroke-width="${stringWidths[i]}" stroke-linecap="round" />`
+  ).join('');
+
+  const pegMarks = pegs.map((p, i) => `
+    <g class="peg" data-string="${i}" tabindex="0" role="button"
+       aria-label="Jouer ${STRING_LABELS[i]} à vide">
+      <circle cx="${p.x}" cy="${p.y}" r="7.2" fill="url(#pegMetal)" stroke="#0c0805" stroke-width="0.9" />
+      <circle cx="${p.x}" cy="${p.y}" r="2.6" fill="#0a0604" />
+      <circle cx="${p.x - 1.6}" cy="${p.y - 1.8}" r="1.2" fill="rgba(255,255,255,0.55)" />
+      <circle class="peg-hit" cx="${p.x}" cy="${p.y}" r="12" fill="transparent" />
+    </g>
+  `).join('');
+
+  return `
+    <svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"
+         class="headstock-svg" role="img" aria-label="Tête de guitare — clique une mécanique pour entendre la corde à vide">
+      <defs>
+        <linearGradient id="headWood" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a230f"/>
+          <stop offset="0.5" stop-color="#22120a"/>
+          <stop offset="1" stop-color="#3a230f"/>
+        </linearGradient>
+        <radialGradient id="pegMetal" cx="0.35" cy="0.35" r="0.75">
+          <stop offset="0"   stop-color="#f3efe6"/>
+          <stop offset="0.55" stop-color="#a8a299"/>
+          <stop offset="1"   stop-color="#3a342c"/>
+        </radialGradient>
+        <linearGradient id="nutBone" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f4ecd8"/>
+          <stop offset="1" stop-color="#c8bd9a"/>
+        </linearGradient>
+      </defs>
+      <path d="${silhouette}" fill="url(#headWood)" stroke="rgba(0,0,0,0.55)" stroke-width="0.8" />
+      <text x="${(w - 4) / 2}" y="${h / 2 + 3}" text-anchor="middle"
+            font-family="Inter, sans-serif" font-size="11" font-weight="700"
+            fill="rgba(245,177,74,0.42)" letter-spacing="0.25em">FB</text>
+      ${strings}
+      ${pegMarks}
+      <rect x="${w - 4}" y="14" width="4" height="82" fill="url(#nutBone)" />
+    </svg>
+  `;
+}
+
 function buildHeroFretboardSVG() {
   // Grand manche en filigrane pour le fond du hero.
   const w = 1400, h = 360, frets = 14, strings = 6;
@@ -240,15 +319,18 @@ export function mountLanding(host) {
           Apprends les notes du manche en notation française.
           Visualise, écoute, joue&nbsp;— directement dans le navigateur.
         </p>
-        <nav class="landing-nav" aria-label="Navigation rapide">
-          <a href="#/manche">Visualiseur<br>de manche</a>
-          <span class="neck-inlay" aria-hidden="true"></span>
-          <a href="#/accords">Roue<br>d'accords</a>
-          <span class="neck-inlay" aria-hidden="true"></span>
-          <a href="#/game">Jeu<br>d'oreille</a>
-          <span class="neck-inlay" aria-hidden="true"></span>
-          <a href="#/triades">Triades<br>d'accord</a>
-        </nav>
+        <div class="landing-neck">
+          <div class="headstock">${buildHeadstock()}</div>
+          <nav class="landing-nav" aria-label="Navigation rapide">
+            <a href="#/manche">Visualiseur<br>de manche</a>
+            <span class="neck-inlay" aria-hidden="true"></span>
+            <a href="#/accords">Roue<br>d'accords</a>
+            <span class="neck-inlay" aria-hidden="true"></span>
+            <a href="#/game">Jeu<br>d'oreille</a>
+            <span class="neck-inlay" aria-hidden="true"></span>
+            <a href="#/triades">Triades<br>d'accord</a>
+          </nav>
+        </div>
         <div class="landing-scroll-hint" aria-hidden="true">
           <span>Découvrir</span>
           <span class="landing-scroll-arrow"></span>
@@ -361,8 +443,32 @@ export function mountLanding(host) {
   window.addEventListener('scroll', onScroll, { passive: true });
   apply();
 
+  // Mécaniques de la tête : clic / clavier joue la corde à vide correspondante.
+  const headstock = wrap.querySelector('.headstock');
+  function pluckString(idx) {
+    const t = TUNING[idx];
+    if (!t) return;
+    playNote(frequencyOf(midiOf({ noteIndex: t.note, octave: t.octave })));
+  }
+  function onPegActivate(e) {
+    const peg = e.target.closest('[data-string]');
+    if (!peg) return;
+    e.preventDefault();
+    peg.classList.add('peg-active');
+    setTimeout(() => peg.classList.remove('peg-active'), 320);
+    pluckString(+peg.dataset.string);
+  }
+  function onPegKey(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    onPegActivate(e);
+  }
+  headstock?.addEventListener('click', onPegActivate);
+  headstock?.addEventListener('keydown', onPegKey);
+
   return () => {
     window.removeEventListener('scroll', onScroll);
+    headstock?.removeEventListener('click', onPegActivate);
+    headstock?.removeEventListener('keydown', onPegKey);
     document.body.classList.remove('topbar-revealed');
     window.scrollTo({ top: 0 });
   };

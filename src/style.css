@@ -104,6 +104,9 @@ body.is-landing.topbar-revealed .topbar {
 }
 
 /* ── Manche Les Paul : rosewood + blocs ivoire + fils de frette ── */
+/* 6 cordes en stack de gradients, alignées sur les points du sillet de la tête.
+   Offsets verticaux depuis le centre : ±33, ±19, ±5 px (= mêmes y que la tête,
+   centrée verticalement dans .landing-neck). Mi aigu (fin) en haut, Mi grave (épais) en bas. */
 .topbar-links,
 .landing-nav {
   display: flex;
@@ -111,22 +114,17 @@ body.is-landing.topbar-revealed .topbar {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  background: linear-gradient(180deg, #2e1a0c 0%, #1c0e05 40%, #251508 70%, #1a0d04 100%);
+  background:
+    linear-gradient(to bottom, transparent calc(50% - 33.30px),  rgba(220, 210, 180, 0.38) calc(50% - 33.30px),  rgba(220, 210, 180, 0.38) calc(50% - 32.70px),  transparent calc(50% - 32.70px)),
+    linear-gradient(to bottom, transparent calc(50% - 19.375px), rgba(220, 210, 180, 0.40) calc(50% - 19.375px), rgba(220, 210, 180, 0.40) calc(50% - 18.625px), transparent calc(50% - 18.625px)),
+    linear-gradient(to bottom, transparent calc(50% - 5.45px),   rgba(220, 210, 180, 0.42) calc(50% - 5.45px),   rgba(220, 210, 180, 0.42) calc(50% - 4.55px),   transparent calc(50% - 4.55px)),
+    linear-gradient(to bottom, transparent calc(50% + 4.45px),   rgba(220, 210, 180, 0.46) calc(50% + 4.45px),   rgba(220, 210, 180, 0.46) calc(50% + 5.55px),   transparent calc(50% + 5.55px)),
+    linear-gradient(to bottom, transparent calc(50% + 18.35px),  rgba(220, 210, 180, 0.50) calc(50% + 18.35px),  rgba(220, 210, 180, 0.50) calc(50% + 19.65px),  transparent calc(50% + 19.65px)),
+    linear-gradient(to bottom, transparent calc(50% + 32.25px),  rgba(220, 210, 180, 0.55) calc(50% + 32.25px),  rgba(220, 210, 180, 0.55) calc(50% + 33.75px),  transparent calc(50% + 33.75px)),
+    linear-gradient(180deg, #2e1a0c 0%, #1c0e05 40%, #251508 70%, #1a0d04 100%);
   border: 1px solid rgba(0, 0, 0, 0.5);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
-/* Cordes horizontales */
-.topbar-links::before, .topbar-links::after,
-.landing-nav::before,  .landing-nav::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0;
-  height: 1px;
-  pointer-events: none;
-  z-index: 0;
-}
-.topbar-links::before, .landing-nav::before { top: 30%; background: rgba(180, 155, 110, 0.20); }
-.topbar-links::after,  .landing-nav::after  { top: 70%; background: rgba(180, 155, 110, 0.15); }
 
 /* Fils de frette entre chaque section */
 .topbar-links > * + *,
@@ -205,11 +203,50 @@ body.is-landing.topbar-revealed .topbar {
 
 .landing-nav { display: inline-flex; margin-top: 8px; }
 
+/* ── Tête de guitare (3+3) accolée à gauche du menu-manche ── */
+.landing-neck {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+}
+.landing-neck .landing-nav {
+  margin-top: 0;
+  border-radius: 0 10px 10px 0;
+  border-left: none;
+}
+.headstock {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+}
+.headstock-svg {
+  display: block;
+  height: 110px;
+  width: auto;
+}
+.headstock .peg {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 200ms var(--ease), filter 200ms var(--ease);
+}
+.headstock .peg:hover { filter: brightness(1.18); }
+.headstock .peg:focus-visible { outline: none; filter: brightness(1.25) drop-shadow(0 0 4px var(--accent)); }
+.headstock .peg.peg-active { animation: peg-spin 320ms var(--ease); }
+@keyframes peg-spin {
+  0%   { transform: rotate(0deg)   scale(1); }
+  40%  { transform: rotate(-22deg) scale(1.08); }
+  100% { transform: rotate(0deg)   scale(1); }
+}
+
 @media (max-width: 768px) {
   .topbar { padding: 8px 16px; }
   .topbar-links a, .landing-nav a { padding: 0 8px; width: 84px; font-size: 0.7rem; height: 70px; }
   .neck-inlay { flex: 0 0 20px; }
   .neck-inlay::before { width: 16px; height: 42px; }
+  .headstock { display: none; }
+  .landing-neck .landing-nav { border-radius: 10px; border-left: 1px solid rgba(0, 0, 0, 0.5); }
 }
 
 .hero {
