@@ -127,12 +127,16 @@ function playSynth(frequency, { duration = 1.2, gain = 0.25 } = {}) {
   osc.stop(releaseStart + release + 0.05);
 }
 
-export function playNote(frequency, opts = {}) {
+export async function playNote(frequency, opts = {}) {
+  // Si le chargement n'a jamais été déclenché, le faire maintenant.
+  if (!loadPromise && !loadFailed) preloadSamples();
+  // Si chargement en cours, attendre — on préfère la vraie guitare au synth.
+  if (buffers.size === 0 && loadPromise && !loadFailed) {
+    await loadPromise;
+  }
   if (buffers.size > 0) {
     if (playSample(frequency, opts)) return;
   }
-  // Pendant le chargement initial ou en cas d'échec CDN.
+  // Fallback synth uniquement si le CDN est injoignable.
   playSynth(frequency, opts);
-  // Si le chargement n'a pas encore été déclenché, le déclencher maintenant.
-  if (!loadPromise && !loadFailed) preloadSamples();
 }

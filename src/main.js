@@ -5,7 +5,13 @@ import { mountGame } from './views/game.js';
 import { mountLevels } from './views/levels.js';
 import { mountChords } from './views/chords.js';
 import { mountTriads } from './views/triads.js';
+import { preloadSamples } from './audio.js';
 import { isUnlocked, MAX_LEVEL } from './progression.js';
+
+// Préchargement immédiat des échantillons de guitare (CORS, ~13 MP3 légers).
+// Garantit que même un clic sur un peg de la home utilise la vraie guitare,
+// pas le synth de fallback.
+preloadSamples();
 
 const view = document.getElementById('view');
 const body = document.body;
