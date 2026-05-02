@@ -105,7 +105,7 @@ body:not(.is-landing) .topbar-neck { display: none; }
 }
 .topbar-headstock svg {
   display: block;
-  height: 92px;
+  height: 164px;
   width: auto;
 }
 
