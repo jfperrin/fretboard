@@ -1,0 +1,331 @@
+<style>
+  body { background: #0a0d12; }
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  h2 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; color: #f0f0f0; }
+  .subtitle-text { margin: 0; color: #6b7280; font-size: 0.9rem; }
+
+  /* Sélecteurs */
+  .selectors { display: flex; flex-direction: column; gap: 12px; }
+  .selector-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .selector-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6b7280;
+    min-width: 72px;
+  }
+  .note-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .note-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: #9ca3af;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .note-btn.active {
+    background: linear-gradient(135deg, #f5b14a, #e89320);
+    border-color: transparent;
+    color: #1a0f00;
+  }
+  .quality-btns { display: flex; gap: 8px; }
+  .quality-btn {
+    padding: 7px 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: #9ca3af;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .quality-btn.active {
+    background: rgba(245,177,74,0.15);
+    border-color: rgba(245,177,74,0.4);
+    color: #f5b14a;
+    font-weight: 600;
+  }
+
+  /* Légende */
+  .legend {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #9ca3af; }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  .dot-root   { background: #f5b14a; box-shadow: 0 0 8px rgba(245,177,74,0.6); }
+  .dot-third  { background: #56c2ff; box-shadow: 0 0 8px rgba(86,194,255,0.5); }
+  .dot-fifth  { background: #e0e0e0; box-shadow: 0 0 6px rgba(255,255,255,0.3); }
+
+  /* Rows */
+  .triad-rows { display: flex; flex-direction: column; gap: 20px; }
+  .triad-row {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .row-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+  .row-strings {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: #4b5563;
+    margin-top: -6px;
+  }
+
+  /* Mini-manche SVG */
+  .mini-fret {
+    width: 100%;
+    height: 80px;
+    display: block;
+  }
+</style>
+
+<div class="page">
+  <div>
+    <h2>Triades</h2>
+    <p class="subtitle-text">Positions d'accord sur chaque groupe de 3 cordes</p>
+  </div>
+
+  <div class="selectors">
+    <div class="selector-row">
+      <span class="selector-label">Note</span>
+      <div class="note-btns">
+        <div class="note-btn active">Do</div>
+        <div class="note-btn">Do♯</div>
+        <div class="note-btn">Ré</div>
+        <div class="note-btn">Ré♯</div>
+        <div class="note-btn">Mi</div>
+        <div class="note-btn">Fa</div>
+        <div class="note-btn">Fa♯</div>
+        <div class="note-btn">Sol</div>
+        <div class="note-btn">Sol♯</div>
+        <div class="note-btn">La</div>
+        <div class="note-btn">La♯</div>
+        <div class="note-btn">Si</div>
+      </div>
+    </div>
+    <div class="selector-row">
+      <span class="selector-label">Qualité</span>
+      <div class="quality-btns">
+        <div class="quality-btn active">Majeure</div>
+        <div class="quality-btn">Mineure</div>
+        <div class="quality-btn">Diminuée</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot dot-root"></div> Racine</div>
+    <div class="legend-item"><div class="legend-dot dot-third"></div> Tierce</div>
+    <div class="legend-item"><div class="legend-dot dot-fifth"></div> Quinte</div>
+  </div>
+
+  <div class="triad-rows">
+
+    <!-- Cordes 1-2-3 -->
+    <div class="triad-row">
+      <div class="row-label">Cordes 1 · 2 · 3</div>
+      <div class="row-strings">Mi aigu · Si · Sol</div>
+      <svg class="mini-fret" viewBox="0 0 820 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- fond bois léger -->
+        <rect x="0" y="0" width="820" height="80" fill="rgba(139,90,43,0.06)" rx="6"/>
+        <!-- frettes -->
+        <line x1="60" y1="0" x2="60" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+        <line x1="60" y1="10" x2="60" y2="70" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+        <text x="30" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#f5b14a" font-weight="700">0</text>
+        <!-- frets 1-15 logarithmiques approx -->
+        <line x1="120" y1="10" x2="120" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="178" y1="10" x2="178" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="234" y1="10" x2="234" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="287" y1="10" x2="287" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="338" y1="10" x2="338" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="387" y1="10" x2="387" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="433" y1="10" x2="433" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="477" y1="10" x2="477" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="519" y1="10" x2="519" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="558" y1="10" x2="558" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="596" y1="10" x2="596" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="631" y1="10" x2="631" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="665" y1="10" x2="665" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="697" y1="10" x2="697" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="727" y1="10" x2="727" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <!-- Cordes (3 sur les 6) -->
+        <line x1="60" y1="20" x2="820" y2="20" stroke="#c8cdd6" stroke-width="1" opacity="0.6"/>
+        <line x1="60" y1="40" x2="820" y2="40" stroke="#c8cdd6" stroke-width="1.5" opacity="0.7"/>
+        <line x1="60" y1="60" x2="820" y2="60" stroke="#c8cdd6" stroke-width="2" opacity="0.8"/>
+        <!-- Numéros frettes indicatifs -->
+        <text x="206" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">3</text>
+        <text x="312" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">5</text>
+        <text x="455" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">7</text>
+        <text x="538" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">9</text>
+        <text x="613" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">12</text>
+
+        <!-- Position 1 (frets 0-1) : Sol-Do-Mi -->
+        <circle cx="90" cy="60" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="90" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+        <circle cx="90" cy="40" r="10" fill="#f5b14a"/>
+        <text x="90" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+        <circle cx="30" cy="20" r="10" fill="#56c2ff"/>
+        <text x="30" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+
+        <!-- Position 2 (frets 5-8) : Mi-Sol-Do -->
+        <circle cx="312" cy="60" r="10" fill="#56c2ff"/>
+        <text x="312" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+        <circle cx="455" cy="40" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="455" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+        <circle cx="477" cy="20" r="10" fill="#f5b14a"/>
+        <text x="477" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+
+        <!-- Position 3 (frets 8-10) : Do-Mi-Sol -->
+        <circle cx="519" cy="60" r="10" fill="#f5b14a"/>
+        <text x="519" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+        <circle cx="596" cy="40" r="10" fill="#56c2ff"/>
+        <text x="596" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+        <circle cx="631" cy="20" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="631" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+      </svg>
+    </div>
+
+    <!-- Cordes 2-3-4 -->
+    <div class="triad-row">
+      <div class="row-label">Cordes 2 · 3 · 4</div>
+      <div class="row-strings">Si · Sol · Ré</div>
+      <svg class="mini-fret" viewBox="0 0 820 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="820" height="80" fill="rgba(139,90,43,0.06)" rx="6"/>
+        <line x1="60" y1="0" x2="60" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+        <line x1="60" y1="10" x2="60" y2="70" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+        <line x1="120" y1="10" x2="120" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="178" y1="10" x2="178" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="234" y1="10" x2="234" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="287" y1="10" x2="287" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="338" y1="10" x2="338" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="387" y1="10" x2="387" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="433" y1="10" x2="433" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="477" y1="10" x2="477" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="519" y1="10" x2="519" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="558" y1="10" x2="558" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="596" y1="10" x2="596" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="631" y1="10" x2="631" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="665" y1="10" x2="665" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="697" y1="10" x2="697" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="727" y1="10" x2="727" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="60" y1="20" x2="820" y2="20" stroke="#c8cdd6" stroke-width="1.5" opacity="0.6"/>
+        <line x1="60" y1="40" x2="820" y2="40" stroke="#c8cdd6" stroke-width="2" opacity="0.7"/>
+        <line x1="60" y1="60" x2="820" y2="60" stroke="#c8cdd6" stroke-width="2.5" opacity="0.8"/>
+        <text x="206" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">3</text>
+        <text x="312" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">5</text>
+        <text x="455" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">7</text>
+        <text x="538" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">9</text>
+        <text x="613" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">12</text>
+
+        <!-- Position 1 -->
+        <circle cx="206" cy="60" r="10" fill="#f5b14a"/>
+        <text x="206" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+        <circle cx="234" cy="40" r="10" fill="#56c2ff"/>
+        <text x="234" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+        <circle cx="178" cy="20" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="178" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+
+        <!-- Position 2 -->
+        <circle cx="433" cy="60" r="10" fill="#56c2ff"/>
+        <text x="433" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+        <circle cx="455" cy="40" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="455" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+        <circle cx="477" cy="20" r="10" fill="#f5b14a"/>
+        <text x="477" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+
+        <!-- Position 3 -->
+        <circle cx="631" cy="60" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="631" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+        <circle cx="631" cy="40" r="10" fill="#f5b14a"/>
+        <text x="631" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+        <circle cx="665" cy="20" r="10" fill="#56c2ff"/>
+        <text x="665" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+      </svg>
+    </div>
+
+    <!-- Cordes 4-5-6 -->
+    <div class="triad-row">
+      <div class="row-label">Cordes 4 · 5 · 6</div>
+      <div class="row-strings">Ré · La · Mi grave</div>
+      <svg class="mini-fret" viewBox="0 0 820 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="820" height="80" fill="rgba(139,90,43,0.06)" rx="6"/>
+        <line x1="60" y1="0" x2="60" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+        <line x1="60" y1="10" x2="60" y2="70" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+        <line x1="120" y1="10" x2="120" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="178" y1="10" x2="178" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="234" y1="10" x2="234" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="287" y1="10" x2="287" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="338" y1="10" x2="338" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="387" y1="10" x2="387" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="433" y1="10" x2="433" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="477" y1="10" x2="477" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="519" y1="10" x2="519" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="558" y1="10" x2="558" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="596" y1="10" x2="596" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="631" y1="10" x2="631" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="665" y1="10" x2="665" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="697" y1="10" x2="697" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="727" y1="10" x2="727" y2="70" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <line x1="60" y1="20" x2="820" y2="20" stroke="#c8cdd6" stroke-width="2" opacity="0.6"/>
+        <line x1="60" y1="40" x2="820" y2="40" stroke="#c8cdd6" stroke-width="2.5" opacity="0.7"/>
+        <line x1="60" y1="60" x2="820" y2="60" stroke="#c8cdd6" stroke-width="3" opacity="0.85"/>
+        <text x="206" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">3</text>
+        <text x="312" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">5</text>
+        <text x="455" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">7</text>
+        <text x="538" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">9</text>
+        <text x="613" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4b5563">12</text>
+
+        <!-- Position 1 (frets 2-3) -->
+        <circle cx="206" cy="20" r="10" fill="#56c2ff"/>
+        <text x="206" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+        <circle cx="234" cy="40" r="10" fill="#f5b14a"/>
+        <text x="234" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+        <circle cx="287" cy="60" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="287" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+
+        <!-- Position 2 (frets 5-7) -->
+        <circle cx="362" cy="20" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="362" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+        <circle cx="387" cy="40" r="10" fill="#56c2ff"/>
+        <text x="387" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+        <circle cx="433" cy="60" r="10" fill="#f5b14a"/>
+        <text x="433" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+
+        <!-- Position 3 (frets 8-10) -->
+        <circle cx="519" cy="20" r="10" fill="#f5b14a"/>
+        <text x="519" y="24" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a0f00">Do</text>
+        <circle cx="558" cy="40" r="10" fill="#e0e0e0" opacity="0.9"/>
+        <text x="558" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#1a1a1a">Sol</text>
+        <circle cx="558" cy="60" r="10" fill="#56c2ff"/>
+        <text x="558" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#001a2a">Mi</text>
+      </svg>
+    </div>
+
+  </div>
+</div>
