@@ -191,33 +191,36 @@ function buildEarIllu() {
 
 function buildHeadstock() {
   // Tête Les Paul stylisée (3+3) accolée à gauche du menu-manche.
-  // viewBox 260×110 : silhouette + 6 mécaniques + 6 cordes vers le sillet.
-  const w = 260, h = 110;
+  // viewBox 260×130 : tête plus large que le manche (joint 78 = hauteur menu,
+  // body 122 au plus large → +22 px de débord en haut/bas). Flares en courbes Q
+  // pour garder le body large jusque près du joint.
+  const w = 260, h = 130;
   const silhouette = `
-    M ${w} 16
-    L ${w} 94
-    L 60 102
-    Q 16 102 8 84
-    L 8 64
-    Q 36 55 8 46
-    L 8 26
-    Q 16 8 60 8
-    L ${w} 16 Z
+    M ${w} 26
+    L ${w} 104
+    Q ${w} 126 60 126
+    Q 16 126 8 100
+    L 8 78
+    Q 36 65 8 52
+    L 8 30
+    Q 16 4 60 4
+    Q ${w} 4 ${w} 26 Z
   `;
   // Grille interne : 8 cases de largeur égale (260/8 = 32.5).
   // Mécaniques sur les cases 3, 5, 7 (centres x = 81.25, 146.25, 211.25),
-  // rentrées à ~25 px des bords haut/bas (top y=35, bottom y=75).
+  // rentrées un peu plus près des bords (haut y=30, bas y=100).
   // Mi grave en bas-droite, Mi aigu en haut-droite, encoches comptées depuis le bas.
   const pegs = [
-    { x: 211.25, y: 75 },  // Mi grave (bas droite)
-    { x: 146.25, y: 75 },  // La       (bas milieu)
-    { x: 81.25,  y: 75 },  // Ré       (bas gauche)
-    { x: 81.25,  y: 35 },  // Sol      (haut gauche)
-    { x: 146.25, y: 35 },  // Si       (haut milieu)
-    { x: 211.25, y: 35 },  // Mi aigu  (haut droite)
+    { x: 211.25, y: 100 }, // Mi grave (bas droite)
+    { x: 146.25, y: 100 }, // La       (bas milieu)
+    { x: 81.25,  y: 100 }, // Ré       (bas gauche)
+    { x: 81.25,  y: 30 },  // Sol      (haut gauche)
+    { x: 146.25, y: 30 },  // Si       (haut milieu)
+    { x: 211.25, y: 30 },  // Mi aigu  (haut droite)
   ];
-  // Sillet : Mi grave en bas (1re encoche depuis le bas) → Mi aigu en haut (6e).
-  const nutY = [88, 74, 60, 50, 36, 22];
+  // Sillet : centre y = 65, encoches à offsets ±33, ±19, ±5 (= mêmes y que les
+  // cordes du menu). Mi grave en bas (98), Mi aigu en haut (32).
+  const nutY = [98, 84, 70, 60, 46, 32];
   const stringWidths = [1.05, 0.9, 0.78, 0.68, 0.58, 0.48];
 
   const strings = pegs.map((p, i) =>
@@ -228,15 +231,33 @@ function buildHeadstock() {
   const pegMarks = pegs.map((p, i) => `
     <g class="peg" data-string="${i}" tabindex="0" role="button"
        aria-label="Jouer ${STRING_LABELS[i]} à vide">
-      <circle cx="${p.x}" cy="${p.y}" r="7.2" fill="url(#pegMetal)" stroke="#0c0805" stroke-width="0.9" />
-      <circle cx="${p.x}" cy="${p.y}" r="2.6" fill="#0a0604" />
-      <circle cx="${p.x - 1.6}" cy="${p.y - 1.8}" r="1.2" fill="rgba(255,255,255,0.55)" />
-      <circle class="peg-hit" cx="${p.x}" cy="${p.y}" r="12" fill="transparent" />
+      <circle cx="${p.x + 0.6}" cy="${p.y + 1.8}" r="9" fill="rgba(0,0,0,0.45)" />
+      <circle cx="${p.x}" cy="${p.y}" r="9" fill="url(#pegBushing)" stroke="#16181b" stroke-width="0.6" />
+      <circle cx="${p.x}" cy="${p.y}" r="6.4" fill="url(#pegPost)" stroke="rgba(18,20,24,0.55)" stroke-width="0.4" />
+      <circle cx="${p.x}" cy="${p.y}" r="1.7" fill="#08090b" />
+      <ellipse cx="${p.x - 2.1}" cy="${p.y - 2.6}" rx="2.4" ry="1.5" fill="rgba(255,255,255,0.62)" />
+      <circle class="peg-hit" cx="${p.x}" cy="${p.y}" r="14" fill="transparent" />
     </g>
   `).join('');
 
+  // Manettes (style keystone Kluson) : trapèzes qui dépassent au-delà du body,
+  // dessinés AVANT la silhouette pour que la partie intérieure soit masquée.
+  const knobs = pegs.map((p) => {
+    const isTop = p.y < 65;
+    const innerHW = 5;     // demi-largeur côté peg
+    const outerHW = 7.5;   // demi-largeur côté extérieur
+    const outerY = isTop ? -10 : 140;
+    const midY = isTop ? -1 : 131;
+    return `
+      <polygon points="${p.x - innerHW},${p.y} ${p.x + innerHW},${p.y} ${p.x + outerHW},${outerY} ${p.x - outerHW},${outerY}"
+               fill="url(#knobMetal)" stroke="#0d0f12" stroke-width="0.7" stroke-linejoin="round" />
+      <line x1="${p.x - outerHW + 1.5}" y1="${midY}" x2="${p.x + outerHW - 1.5}" y2="${midY}"
+            stroke="rgba(0,0,0,0.35)" stroke-width="0.5" />
+    `;
+  }).join('');
+
   return `
-    <svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"
+    <svg viewBox="0 -16 ${w} 162" xmlns="http://www.w3.org/2000/svg"
          class="headstock-svg" role="img" aria-label="Tête de guitare — clique une mécanique pour entendre la corde à vide">
       <defs>
         <linearGradient id="headWood" x1="0" y1="0" x2="0" y2="1">
@@ -244,23 +265,37 @@ function buildHeadstock() {
           <stop offset="0.5" stop-color="#22120a"/>
           <stop offset="1" stop-color="#3a230f"/>
         </linearGradient>
-        <radialGradient id="pegMetal" cx="0.35" cy="0.35" r="0.75">
-          <stop offset="0"   stop-color="#f3efe6"/>
-          <stop offset="0.55" stop-color="#a8a299"/>
-          <stop offset="1"   stop-color="#3a342c"/>
+        <radialGradient id="pegBushing" cx="0.35" cy="0.30" r="0.90">
+          <stop offset="0"    stop-color="#dcdee1"/>
+          <stop offset="0.45" stop-color="#9d9fa3"/>
+          <stop offset="0.85" stop-color="#4d4f53"/>
+          <stop offset="1"    stop-color="#1f2125"/>
+        </radialGradient>
+        <radialGradient id="pegPost" cx="0.35" cy="0.30" r="0.85">
+          <stop offset="0"    stop-color="#f4f5f7"/>
+          <stop offset="0.5"  stop-color="#b6b9bd"/>
+          <stop offset="1"    stop-color="#5a5c60"/>
         </radialGradient>
         <linearGradient id="nutBone" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#f4ecd8"/>
           <stop offset="1" stop-color="#c8bd9a"/>
         </linearGradient>
+        <linearGradient id="knobMetal" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0"    stop-color="#3a3c40"/>
+          <stop offset="0.30" stop-color="#b6b9bc"/>
+          <stop offset="0.55" stop-color="#eef0f2"/>
+          <stop offset="0.78" stop-color="#9c9ea2"/>
+          <stop offset="1"    stop-color="#3a3c40"/>
+        </linearGradient>
       </defs>
+      ${knobs}
       <path d="${silhouette}" fill="url(#headWood)" stroke="rgba(0,0,0,0.55)" stroke-width="0.8" />
       <text x="${(w - 4) / 2}" y="${h / 2 + 3}" text-anchor="middle"
             font-family="Inter, sans-serif" font-size="11" font-weight="700"
             fill="rgba(245,177,74,0.42)" letter-spacing="0.25em">FB</text>
       ${strings}
       ${pegMarks}
-      <rect x="${w - 4}" y="14" width="4" height="82" fill="url(#nutBone)" />
+      <rect x="${w - 4}" y="24" width="4" height="82" fill="url(#nutBone)" />
     </svg>
   `;
 }
@@ -323,12 +358,12 @@ export function mountLanding(host) {
           <div class="headstock">${buildHeadstock()}</div>
           <nav class="landing-nav" aria-label="Navigation rapide">
             <a href="#/manche">Visualiseur<br>de manche</a>
-            <span class="neck-inlay" aria-hidden="true"></span>
             <a href="#/accords">Roue<br>d'accords</a>
             <span class="neck-inlay" aria-hidden="true"></span>
             <a href="#/game">Jeu<br>d'oreille</a>
             <span class="neck-inlay" aria-hidden="true"></span>
             <a href="#/triades">Triades<br>d'accord</a>
+            <span class="neck-inlay" aria-hidden="true"></span>
           </nav>
         </div>
         <div class="landing-scroll-hint" aria-hidden="true">

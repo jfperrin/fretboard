@@ -115,9 +115,9 @@ body.is-landing.topbar-revealed .topbar {
   border-radius: 10px;
   overflow: hidden;
   background:
-    linear-gradient(to bottom, transparent calc(50% - 33.30px),  rgba(220, 210, 180, 0.38) calc(50% - 33.30px),  rgba(220, 210, 180, 0.38) calc(50% - 32.70px),  transparent calc(50% - 32.70px)),
-    linear-gradient(to bottom, transparent calc(50% - 19.375px), rgba(220, 210, 180, 0.40) calc(50% - 19.375px), rgba(220, 210, 180, 0.40) calc(50% - 18.625px), transparent calc(50% - 18.625px)),
-    linear-gradient(to bottom, transparent calc(50% - 5.45px),   rgba(220, 210, 180, 0.42) calc(50% - 5.45px),   rgba(220, 210, 180, 0.42) calc(50% - 4.55px),   transparent calc(50% - 4.55px)),
+    linear-gradient(to bottom, transparent calc(50% - 33.40px),  rgba(232, 222, 195, 0.62) calc(50% - 33.40px),  rgba(232, 222, 195, 0.62) calc(50% - 32.60px),  transparent calc(50% - 32.60px)),
+    linear-gradient(to bottom, transparent calc(50% - 19.475px), rgba(232, 222, 195, 0.64) calc(50% - 19.475px), rgba(232, 222, 195, 0.64) calc(50% - 18.525px), transparent calc(50% - 18.525px)),
+    linear-gradient(to bottom, transparent calc(50% - 5.55px),   rgba(232, 222, 195, 0.66) calc(50% - 5.55px),   rgba(232, 222, 195, 0.66) calc(50% - 4.45px),   transparent calc(50% - 4.45px)),
     linear-gradient(to bottom, transparent calc(50% + 4.45px),   rgba(220, 210, 180, 0.46) calc(50% + 4.45px),   rgba(220, 210, 180, 0.46) calc(50% + 5.55px),   transparent calc(50% + 5.55px)),
     linear-gradient(to bottom, transparent calc(50% + 18.35px),  rgba(220, 210, 180, 0.50) calc(50% + 18.35px),  rgba(220, 210, 180, 0.50) calc(50% + 19.65px),  transparent calc(50% + 19.65px)),
     linear-gradient(to bottom, transparent calc(50% + 32.25px),  rgba(220, 210, 180, 0.55) calc(50% + 32.25px),  rgba(220, 210, 180, 0.55) calc(50% + 33.75px),  transparent calc(50% + 33.75px)),
@@ -179,7 +179,7 @@ body.is-landing.topbar-revealed .topbar {
 
 /* Blocs inlay trapézoïdaux ivoire */
 .neck-inlay {
-  flex: 0 0 24px;
+  flex: 0 0 96px;
   position: relative;
   z-index: 1;
   display: flex;
@@ -222,7 +222,7 @@ body.is-landing.topbar-revealed .topbar {
 }
 .headstock-svg {
   display: block;
-  height: 110px;
+  height: 162px;
   width: auto;
 }
 .headstock .peg {
@@ -243,7 +243,7 @@ body.is-landing.topbar-revealed .topbar {
 @media (max-width: 768px) {
   .topbar { padding: 8px 16px; }
   .topbar-links a, .landing-nav a { padding: 0 8px; width: 84px; font-size: 0.7rem; height: 70px; }
-  .neck-inlay { flex: 0 0 20px; }
+  .neck-inlay { flex: 0 0 84px; }
   .neck-inlay::before { width: 16px; height: 42px; }
   .headstock { display: none; }
   .landing-neck .landing-nav { border-radius: 10px; border-left: 1px solid rgba(0, 0, 0, 0.5); }
@@ -956,7 +956,7 @@ body.is-landing.topbar-revealed .topbar {
 .landing-hero-content {
   position: relative;
   z-index: 5;
-  max-width: 760px;
+  max-width: 1000px;
   text-align: center;
   display: flex;
   flex-direction: column;
