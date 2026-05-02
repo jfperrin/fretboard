@@ -181,6 +181,12 @@ export function mountLanding(host) {
             <span class="neck-inlay" aria-hidden="true"></span>
           </nav>
         </div>
+        <nav class="landing-nav-mobile" aria-label="Navigation rapide">
+          <a href="#/manche"><span class="lnm-label">Visualiseur de manche</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/accords"><span class="lnm-label">Roue d'accords</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/game"><span class="lnm-label">Jeu d'oreille</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/triades"><span class="lnm-label">Triades d'accord</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+        </nav>
         <div class="landing-scroll-hint" aria-hidden="true">
           <span>Découvrir</span>
           <span class="landing-scroll-arrow"></span>

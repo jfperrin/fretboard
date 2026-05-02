@@ -265,13 +265,59 @@ body:not(.is-landing) .topbar-neck { display: none; }
   100% { transform: rotate(0deg)   scale(1); }
 }
 
-/* Tête masquée sous 1024 px : sinon manche + tête (≈ 820 px) déborde du
-   contenu hero centré une fois le padding latéral retranché. Idem pour la topbar. */
+/* Nav alternative ≤1024 px : un menu propre remplace le manche dans le hero.
+   Affichée uniquement sur cette plage ; cachée par défaut. */
+.landing-nav-mobile { display: none; }
+
 @media (max-width: 1024px) {
-  .headstock,
-  .topbar-headstock { display: none; }
-  .landing-neck .landing-nav,
-  .topbar-neck .topbar-links { border-radius: 10px; border-left: 1px solid rgba(0, 0, 0, 0.5); }
+  /* Plus de manche (ni dans le hero, ni dans la topbar scrollée) :
+     ça déborderait du contenu centré une fois le padding latéral retranché. */
+  .landing-neck,
+  .topbar-neck { display: none; }
+
+  .landing-nav-mobile {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: min(100%, 520px);
+    margin-top: 8px;
+  }
+  .landing-nav-mobile a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    transition: transform 200ms var(--ease), background 200ms var(--ease),
+                border-color 200ms var(--ease), color 200ms var(--ease);
+  }
+  .landing-nav-mobile a:hover,
+  .landing-nav-mobile a:focus-visible {
+    outline: none;
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(245, 177, 74, 0.45);
+    color: #fff;
+  }
+  .lnm-arrow {
+    color: var(--accent);
+    font-size: 1.05rem;
+    transition: transform 200ms var(--ease);
+  }
+  .landing-nav-mobile a:hover .lnm-arrow { transform: translateX(4px); }
+}
+
+@media (max-width: 520px) {
+  .landing-nav-mobile { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
