@@ -50,8 +50,9 @@ body.is-landing .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 0 clamp(16px, 3vw, 32px);
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  padding: 8px clamp(16px, 3vw, 32px);
   margin-bottom: clamp(20px, 3vw, 32px);
   border-bottom: 1px solid var(--border);
   background: rgba(10, 13, 18, 0.55);
@@ -106,6 +107,7 @@ body.is-landing.topbar-revealed .topbar {
 .topbar-links,
 .landing-nav {
   display: flex;
+  flex-shrink: 0;
   position: relative;
   border-radius: 10px;
   overflow: hidden;
@@ -143,12 +145,12 @@ body.is-landing.topbar-revealed .topbar {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 14px;
-  height: 90px;
-  max-width: 110px;
+  padding: 0 12px;
+  height: 78px;
+  width: 96px;
   text-decoration: none;
   color: rgba(232, 236, 243, 0.50);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 400;
   line-height: 1.5;
   text-align: center;
@@ -179,7 +181,7 @@ body.is-landing.topbar-revealed .topbar {
 
 /* Blocs inlay trapézoïdaux ivoire */
 .neck-inlay {
-  flex: 0 0 32px;
+  flex: 0 0 24px;
   position: relative;
   z-index: 1;
   display: flex;
@@ -189,8 +191,8 @@ body.is-landing.topbar-revealed .topbar {
 .neck-inlay::before {
   content: '';
   display: block;
-  width: 22px;
-  height: 56px;
+  width: 18px;
+  height: 48px;
   background: linear-gradient(165deg,
     #f6f0dc 0%,
     #e8d8b0 35%,
@@ -204,10 +206,10 @@ body.is-landing.topbar-revealed .topbar {
 .landing-nav { display: inline-flex; margin-top: 8px; }
 
 @media (max-width: 768px) {
-  .topbar { padding: 0 16px; }
-  .topbar-links a, .landing-nav a { padding: 0 10px; max-width: 96px; font-size: 0.72rem; height: 78px; }
-  .neck-inlay { flex: 0 0 24px; }
-  .neck-inlay::before { width: 18px; height: 48px; }
+  .topbar { padding: 8px 16px; }
+  .topbar-links a, .landing-nav a { padding: 0 8px; width: 84px; font-size: 0.7rem; height: 70px; }
+  .neck-inlay { flex: 0 0 20px; }
+  .neck-inlay::before { width: 16px; height: 42px; }
 }
 
 .hero {
