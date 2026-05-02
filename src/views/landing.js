@@ -1,389 +1,152 @@
-// Landing page : hero parallaxe à plusieurs couches + CTA + pitch.
+// Landing page : hero parallaxe + bento d'outils + pitch.
 
-import { TUNING, STRING_LABELS, midiOf, frequencyOf } from '../notes.js';
-import { playNote } from '../audio.js';
+import { renderMiniFretboard, fretXs, stringYs } from '../svg/mini-fretboard.js';
+import { polar, annularSectorPath, keyMaskPath } from '../svg/svg-utils.js';
+import { CYCLE_OF_FIFTHS } from '../theory.js';
+import { buildHeadstock, attachHeadstockHandlers } from './headstock.js';
 
 const NATURALS = ['Do', 'Ré', 'Mi', 'Fa', 'Sol', 'La', 'Si'];
 
+// Géométrie commune aux mini-manches du bento.
+const MINI = {
+  w: 280, h: 110,
+  padX: 20, stringTop: 15, stringSpan: 80,
+  fretTop: 10, fretBottom: 95,
+  fretStroke: {
+    nut:  { color: 'rgba(255,255,255,0.85)', width: 3   },
+    fret: { color: 'rgba(255,255,255,0.18)', width: 1.2 },
+  },
+  stringStroke: { color: 'rgba(255,255,255,0.32)', base: 0.6, step: 0.18 },
+};
+const WOOD = { from: '#3a2917', to: '#1d130a' };
+
 function buildMiniFretboard() {
-  // Petit manche stylisé (5 frettes, 6 cordes) pour la carte Visualiseur.
-  // Logique d'espacement logarithmique simplifiée.
-  const w = 280, h = 110, frets = 6, strings = 6;
-  const xs = [];
-  for (let n = 0; n <= frets; n++) {
-    xs.push(20 + (w - 40) * (1 - Math.pow(2, -n / 12)) / (1 - Math.pow(2, -frets / 12)));
-  }
-  const yStep = (h - 30) / (strings - 1);
-  const stringLines = Array.from({ length: strings }, (_, i) =>
-    `<line x1="20" y1="${15 + i * yStep}" x2="${w - 20}" y2="${15 + i * yStep}" stroke="rgba(255,255,255,0.32)" stroke-width="${0.6 + (strings - 1 - i) * 0.18}" />`
-  ).join('');
-  const fretLines = xs.map((x, i) =>
-    `<line x1="${x}" y1="10" x2="${x}" y2="${h - 15}" stroke="${i === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.18)'}" stroke-width="${i === 0 ? 3 : 1.2}" />`
-  ).join('');
-  const dots = [3, 5].map((f) => {
-    const cx = (xs[f - 1] + xs[f]) / 2;
-    return `<circle cx="${cx}" cy="${h / 2}" r="3.4" fill="rgba(255,255,255,0.18)" />`;
-  }).join('');
-  // Quelques markers colorés
-  const markers = [
-    { s: 1, f: 2, c: 'var(--accent)' },
+  const xs = fretXs(6, MINI.padX, MINI.w);
+  const ys = stringYs(6, MINI.stringTop, MINI.stringSpan);
+  const placements = [
+    { s: 1, f: 2, c: 'var(--accent)'   },
     { s: 3, f: 4, c: 'var(--accent-2)' },
-    { s: 4, f: 1, c: 'var(--accent)' },
-  ].map(({ s, f, c }) => {
-    const cx = (xs[f - 1] + xs[f]) / 2;
-    const cy = 15 + s * yStep;
-    return `<circle cx="${cx}" cy="${cy}" r="7" fill="${c}" opacity="0.95" />`;
-  }).join('');
-  return `
-    <svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect x="14" y="6" width="${w - 28}" height="${h - 12}" rx="6"
-            fill="url(#wood)" stroke="rgba(255,255,255,0.06)" />
-      <defs>
-        <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#3a2917"/>
-          <stop offset="1" stop-color="#1d130a"/>
-        </linearGradient>
-      </defs>
-      ${fretLines}
-      ${stringLines}
-      ${dots}
-      ${markers}
-    </svg>
-  `;
+    { s: 4, f: 1, c: 'var(--accent)'   },
+  ];
+  const markers = placements.map(({ s, f, c }) =>
+    `<circle cx="${(xs[f - 1] + xs[f]) / 2}" cy="${ys[s]}" r="7" fill="${c}" opacity="0.95" />`
+  ).join('');
+  return renderMiniFretboard({
+    ...MINI, frets: 6,
+    background: { id: 'wood', ...WOOD },
+    inlays: { single: [3, 5] },
+    inlayRadius: 3.4,
+    markers,
+  });
 }
 
+function buildTriadsIllu() {
+  // Voicing typique Do majeur sur cordes 3-4-5 (Sol/Si/Mi aigu).
+  const xs = fretXs(5, MINI.padX, MINI.w);
+  const ys = stringYs(6, MINI.stringTop, MINI.stringSpan);
+  const triad = [
+    { string: 3, fret: 5, color: 'var(--accent)',   label: '1' },
+    { string: 4, fret: 5, color: '#ffd28a',         label: '3' },
+    { string: 5, fret: 3, color: 'var(--accent-2)', label: '5' },
+  ];
+  const pts = triad.map(({ string, fret }) => ({
+    cx: ((xs[fret - 1] + xs[fret]) / 2).toFixed(1),
+    cy: ys[string].toFixed(1),
+  }));
+  const polygon = `<polygon points="${pts.map(p => `${p.cx},${p.cy}`).join(' ')}"
+    fill="rgba(245,177,74,0.16)" stroke="rgba(245,177,74,0.55)"
+    stroke-width="1.3" stroke-linejoin="round" />`;
+  const dots = triad.map(({ color, label }, i) => {
+    const { cx, cy } = pts[i];
+    return `
+      <circle cx="${cx}" cy="${cy}" r="9.5" fill="${color}" stroke="rgba(0,0,0,0.45)" stroke-width="1" />
+      <text x="${cx}" y="${(+cy + 0.5).toFixed(1)}" text-anchor="middle" dominant-baseline="central"
+            font-family="JetBrains Mono, monospace" font-weight="700" font-size="9"
+            fill="rgba(10,13,18,0.92)">${label}</text>
+    `;
+  }).join('');
+  return renderMiniFretboard({
+    ...MINI, frets: 5,
+    background: { id: 'triadWood', ...WOOD },
+    markers: polygon + dots,
+  });
+}
+
+function buildHeroFretboardSVG() {
+  return renderMiniFretboard({
+    w: 1400, h: 360, frets: 14,
+    padX: 40, stringTop: 30, stringSpan: 300,
+    fretTop: 20, fretBottom: 320,
+    className: 'hero-fretboard-svg',
+    preserveAspectRatio: 'xMidYMid slice',
+    fretStroke: {
+      nut:  { color: 'rgba(255,255,255,0.18)', width: 4   },
+      fret: { color: 'rgba(255,255,255,0.06)', width: 1.3 },
+    },
+    stringStroke: { color: 'rgba(255,255,255,0.10)', base: 0.7, step: 0.2 },
+    inlays: { single: [3, 5, 7, 9], double: [12] },
+    inlayColor: 'rgba(255,255,255,0.10)',
+    doubleInlayYs: [90, 270],
+  });
+}
+
+// Roue d'accords détaillée (tile principal du bento). Ne rend pas le masque
+// interactif : c'est une illustration.
 function buildFeaturedWheelIllu() {
-  // Roue carrée détaillée pour le tile principal du bento.
   const size = 260;
-  const cx = size / 2, cy = size / 2;
   const rOut = 118, rMid = 86, rIn = 54, rCenter = 36;
-  const NAMES = ['Do', 'Sol', 'Ré', 'La', 'Mi', 'Si', 'Fa♯', 'Ré♭', 'La♭', 'Mi♭', 'Si♭', 'Fa'];
+  const NAMES = CYCLE_OF_FIFTHS.majLabels;
 
-  const minSectors = [], majSectors = [], labels = [];
-  const annular = (a1, a2, r1, r2) =>
-    `M ${(cx + Math.cos(a1) * r1).toFixed(1)} ${(cy + Math.sin(a1) * r1).toFixed(1)} ` +
-    `L ${(cx + Math.cos(a1) * r2).toFixed(1)} ${(cy + Math.sin(a1) * r2).toFixed(1)} ` +
-    `A ${r2} ${r2} 0 0 1 ${(cx + Math.cos(a2) * r2).toFixed(1)} ${(cy + Math.sin(a2) * r2).toFixed(1)} ` +
-    `L ${(cx + Math.cos(a2) * r1).toFixed(1)} ${(cy + Math.sin(a2) * r1).toFixed(1)} ` +
-    `A ${r1} ${r1} 0 0 0 ${(cx + Math.cos(a1) * r1).toFixed(1)} ${(cy + Math.sin(a1) * r1).toFixed(1)} Z`;
-
+  let body = '';
   for (let i = 0; i < 12; i++) {
-    const aMid = (i * 30 - 90) * Math.PI / 180;
-    const a1   = (i * 30 - 15 - 90) * Math.PI / 180;
-    const a2   = (i * 30 + 15 - 90) * Math.PI / 180;
-    const hue  = (i * 30) % 360;
-    minSectors.push(`<path d="${annular(a1, a2, rIn, rMid)}" fill="hsl(${hue},42%,38%)" stroke="rgba(10,13,18,0.4)" stroke-width="0.6" />`);
-    majSectors.push(`<path d="${annular(a1, a2, rMid, rOut)}" fill="hsl(${hue},58%,56%)" stroke="rgba(10,13,18,0.4)" stroke-width="0.6" />`);
-    const xL = cx + Math.cos(aMid) * ((rMid + rOut) / 2);
-    const yL = cy + Math.sin(aMid) * ((rMid + rOut) / 2);
-    labels.push(`<text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="rgba(10,13,18,0.92)" font-family="JetBrains Mono, monospace" font-weight="700" font-size="12">${NAMES[i]}</text>`);
+    const start = i * 30 - 15;
+    const end   = i * 30 + 15;
+    const hue   = (i * 30) % 360;
+    body += `<path d="${annularSectorPath(rIn, rMid, start, end)}" fill="hsl(${hue},42%,38%)" stroke="rgba(10,13,18,0.4)" stroke-width="0.6" />`;
+    body += `<path d="${annularSectorPath(rMid, rOut, start, end)}" fill="hsl(${hue},58%,56%)" stroke="rgba(10,13,18,0.4)" stroke-width="0.6" />`;
+    const [xL, yL] = polar((rMid + rOut) / 2, i * 30);
+    body += `<text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="rgba(10,13,18,0.92)" font-family="JetBrains Mono, monospace" font-weight="700" font-size="12">${NAMES[i]}</text>`;
   }
 
-  const fmt = (r, deg) => {
-    const a = (deg - 90) * Math.PI / 180;
-    return `${(cx + Math.cos(a) * r).toFixed(1)} ${(cy + Math.sin(a) * r).toFixed(1)}`;
-  };
   const mask = `
-    <path d="M ${fmt(rMid, -45)}
-      A ${rMid} ${rMid} 0 0 1 ${fmt(rMid, -15)}
-      L ${fmt(rOut, -15)}
-      A ${rOut} ${rOut} 0 0 1 ${fmt(rOut, 15)}
-      L ${fmt(rMid, 15)}
-      A ${rMid} ${rMid} 0 0 1 ${fmt(rMid, 45)}
-      L ${fmt(rIn, 45)}
-      A ${rIn} ${rIn} 0 0 0 ${fmt(rIn, -45)} Z"
+    <path d="${keyMaskPath({ rDimOut: rOut, rMajOut: rMid, rInner: rIn })}"
       fill="rgba(245,177,74,0.10)" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"
       style="filter: drop-shadow(0 0 6px rgba(245,177,74,0.4))" />
   `;
 
   return `
-    <svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      ${minSectors.join('')}
-      ${majSectors.join('')}
-      ${labels.join('')}
-      <circle cx="${cx}" cy="${cy}" r="${rCenter}" fill="var(--bg-1)" stroke="var(--accent)" stroke-width="1.5" />
-      <text x="${cx}" y="${cy - 4}" text-anchor="middle" dominant-baseline="central"
+    <svg viewBox="${-size / 2} ${-size / 2} ${size} ${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${body}
+      <circle cx="0" cy="0" r="${rCenter}" fill="var(--bg-1)" stroke="var(--accent)" stroke-width="1.5" />
+      <text x="0" y="-4" text-anchor="middle" dominant-baseline="central"
             fill="var(--fg)" font-family="JetBrains Mono, monospace" font-weight="700" font-size="22">Do</text>
-      <text x="${cx}" y="${cy + 16}" text-anchor="middle" dominant-baseline="central"
+      <text x="0" y="16" text-anchor="middle" dominant-baseline="central"
             fill="var(--fg-dim)" font-family="Inter, sans-serif" font-weight="500" font-size="9" letter-spacing="0.12em">MAJEUR</text>
       ${mask}
     </svg>
   `;
 }
 
-function buildChordWheelIllu() {
-  // Mini roue : 3 anneaux x 12 secteurs + masque ambré au sommet.
-  const cx = 140, cy = 55;
-  const rOut = 50, rMid = 38, rIn = 24, rCenter = 12;
-  const sectors = [];
-  for (let i = 0; i < 12; i++) {
-    const a1 = (i * 30 - 15 - 90) * Math.PI / 180;
-    const a2 = (i * 30 + 15 - 90) * Math.PI / 180;
-    const hue = (i * 30) % 360;
-    const ringR = [
-      { rIn: rMid, rOut, sat: 56, lum: 60 },
-      { rIn,       rOut: rMid, sat: 50, lum: 50 },
-    ];
-    for (const { rIn: ri, rOut: ro, sat, lum } of ringR) {
-      const x1 = cx + Math.cos(a1) * ri,  y1 = cy + Math.sin(a1) * ri;
-      const x2 = cx + Math.cos(a1) * ro,  y2 = cy + Math.sin(a1) * ro;
-      const x3 = cx + Math.cos(a2) * ro,  y3 = cy + Math.sin(a2) * ro;
-      const x4 = cx + Math.cos(a2) * ri,  y4 = cy + Math.sin(a2) * ri;
-      sectors.push(
-        `<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} L ${x2.toFixed(1)} ${y2.toFixed(1)} A ${ro} ${ro} 0 0 1 ${x3.toFixed(1)} ${y3.toFixed(1)} L ${x4.toFixed(1)} ${y4.toFixed(1)} A ${ri} ${ri} 0 0 0 ${x1.toFixed(1)} ${y1.toFixed(1)} Z" fill="hsl(${hue}, ${sat}%, ${lum}%)" stroke="rgba(10,13,18,0.35)" stroke-width="0.6" />`
-      );
-    }
-  }
-  // Masque clé : 3 cases majeures (11h, 12h, 1h) + 3 mineures + 1 vii° au sommet.
-  // Polygone unifié pour simplicité visuelle.
-  const fmt = (r, deg) => {
-    const a = (deg - 90) * Math.PI / 180;
-    return `${(cx + Math.cos(a) * r).toFixed(1)} ${(cy + Math.sin(a) * r).toFixed(1)}`;
-  };
-  const mask = `
-    <path d="
-      M ${fmt(rMid, -45)}
-      A ${rMid} ${rMid} 0 0 1 ${fmt(rMid, -15)}
-      L ${fmt(rOut, -15)}
-      A ${rOut} ${rOut} 0 0 1 ${fmt(rOut, 15)}
-      L ${fmt(rMid, 15)}
-      A ${rMid} ${rMid} 0 0 1 ${fmt(rMid, 45)}
-      L ${fmt(rCenter, 45)}
-      A ${rCenter} ${rCenter} 0 0 0 ${fmt(rCenter, -45)}
-      Z"
-      fill="rgba(245,177,74,0.16)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" />
-  `;
-  return `
-    <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      ${sectors.join('')}
-      <circle cx="${cx}" cy="${cy}" r="${rIn}" fill="var(--bg-1)" stroke="rgba(255,255,255,0.08)" />
-      ${mask}
-      <text x="${cx}" y="${cy + 3}" text-anchor="middle" fill="var(--fg)"
-            font-family="JetBrains Mono, monospace" font-weight="700" font-size="11">Do</text>
-    </svg>
-  `;
-}
-
-function buildTriadsIllu() {
-  // Mini manche (5 frettes, 6 cordes) avec un triangle de triade — root, tierce, quinte
-  // sur 3 cordes adjacentes (cordes 1-2-3 = Sol/Si/Mi aigu, voicing typique Do majeur).
-  const w = 280, h = 110, frets = 5, strings = 6;
-  const xs = [];
-  for (let n = 0; n <= frets; n++) {
-    xs.push(20 + (w - 40) * (1 - Math.pow(2, -n / 12)) / (1 - Math.pow(2, -frets / 12)));
-  }
-  const yStep = (h - 30) / (strings - 1);
-  const fretLines = xs.map((x, i) =>
-    `<line x1="${x}" y1="10" x2="${x}" y2="${h - 15}" stroke="${i === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.18)'}" stroke-width="${i === 0 ? 3 : 1.2}" />`
-  ).join('');
-  const stringLines = Array.from({ length: strings }, (_, i) =>
-    `<line x1="20" y1="${15 + i * yStep}" x2="${w - 20}" y2="${15 + i * yStep}" stroke="rgba(255,255,255,0.32)" stroke-width="${0.6 + (strings - 1 - i) * 0.18}" />`
-  ).join('');
-  const triad = [
-    { string: 3, fret: 5, color: 'var(--accent)',   label: '1' }, // root
-    { string: 4, fret: 5, color: '#ffd28a',         label: '3' }, // tierce
-    { string: 5, fret: 3, color: 'var(--accent-2)', label: '5' }, // quinte
-  ];
-  const points = triad.map(({ string, fret }) => {
-    const cx = (xs[fret - 1] + xs[fret]) / 2;
-    const cy = 15 + string * yStep;
-    return `${cx.toFixed(1)},${cy.toFixed(1)}`;
-  }).join(' ');
-  const dots = triad.map(({ string, fret, color, label }) => {
-    const cx = (xs[fret - 1] + xs[fret]) / 2;
-    const cy = 15 + string * yStep;
-    return `
-      <circle cx="${cx}" cy="${cy}" r="9.5" fill="${color}" stroke="rgba(0,0,0,0.45)" stroke-width="1" />
-      <text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="central"
-            font-family="JetBrains Mono, monospace" font-weight="700" font-size="9"
-            fill="rgba(10,13,18,0.92)">${label}</text>
-    `;
-  }).join('');
-  return `
-    <svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect x="14" y="6" width="${w - 28}" height="${h - 12}" rx="6"
-            fill="url(#triadWood)" stroke="rgba(255,255,255,0.06)" />
-      <defs>
-        <linearGradient id="triadWood" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#3a2917"/>
-          <stop offset="1" stop-color="#1d130a"/>
-        </linearGradient>
-      </defs>
-      ${fretLines}
-      ${stringLines}
-      <polygon points="${points}" fill="rgba(245, 177, 74, 0.16)"
-               stroke="rgba(245, 177, 74, 0.55)" stroke-width="1.3" stroke-linejoin="round" />
-      ${dots}
-    </svg>
-  `;
-}
-
 function buildEarIllu() {
-  // Illustration "jeu d'oreille" : grosse note + onde
   return `
     <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <text x="32" y="78" font-family="JetBrains Mono, monospace" font-weight="700"
-            font-size="64" fill="url(#noteg)">Sol</text>
       <defs>
         <linearGradient id="noteg" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stop-color="#ffffff"/>
           <stop offset="1" stop-color="var(--accent)"/>
         </linearGradient>
         <linearGradient id="waveg" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="var(--accent-2)" stop-opacity="0.2"/>
+          <stop offset="0"   stop-color="var(--accent-2)" stop-opacity="0.2"/>
           <stop offset="0.5" stop-color="var(--accent-2)"/>
-          <stop offset="1" stop-color="var(--accent-2)" stop-opacity="0.2"/>
+          <stop offset="1"   stop-color="var(--accent-2)" stop-opacity="0.2"/>
         </linearGradient>
       </defs>
+      <text x="32" y="78" font-family="JetBrains Mono, monospace" font-weight="700"
+            font-size="64" fill="url(#noteg)">Sol</text>
       <path d="M 160 55 Q 175 30 190 55 T 220 55 T 250 55 T 270 55"
             fill="none" stroke="url(#waveg)" stroke-width="2.4" stroke-linecap="round" />
       <path d="M 160 65 Q 175 80 190 65 T 220 65 T 250 65 T 270 65"
             fill="none" stroke="url(#waveg)" stroke-width="1.6" stroke-linecap="round" opacity="0.6" />
-    </svg>
-  `;
-}
-
-export function buildHeadstock() {
-  // Tête Les Paul stylisée (3+3) accolée à gauche du menu-manche.
-  // viewBox 260×130 : tête plus large que le manche (joint 78 = hauteur menu,
-  // body 122 au plus large → +22 px de débord en haut/bas). Flares en courbes Q
-  // pour garder le body large jusque près du joint.
-  const w = 260, h = 130;
-  const silhouette = `
-    M ${w} 26
-    L ${w} 104
-    Q ${w} 126 60 126
-    Q 16 126 8 100
-    L 8 78
-    Q 36 65 8 52
-    L 8 30
-    Q 16 4 60 4
-    Q ${w} 4 ${w} 26 Z
-  `;
-  // Grille interne : 8 cases de largeur égale (260/8 = 32.5).
-  // Mécaniques sur les cases 3, 5, 7 (centres x = 81.25, 146.25, 211.25),
-  // rentrées un peu plus près des bords (haut y=30, bas y=100).
-  // Mi grave en bas-droite, Mi aigu en haut-droite, encoches comptées depuis le bas.
-  const pegs = [
-    { x: 211.25, y: 100 }, // Mi grave (bas droite)
-    { x: 146.25, y: 100 }, // La       (bas milieu)
-    { x: 81.25,  y: 100 }, // Ré       (bas gauche)
-    { x: 81.25,  y: 30 },  // Sol      (haut gauche)
-    { x: 146.25, y: 30 },  // Si       (haut milieu)
-    { x: 211.25, y: 30 },  // Mi aigu  (haut droite)
-  ];
-  // Sillet : centre y = 65, encoches à offsets ±33, ±19, ±5 (= mêmes y que les
-  // cordes du menu). Mi grave en bas (98), Mi aigu en haut (32).
-  const nutY = [98, 84, 70, 60, 46, 32];
-  const stringWidths = [1.05, 0.9, 0.78, 0.68, 0.58, 0.48];
-
-  const strings = pegs.map((p, i) =>
-    `<line x1="${p.x}" y1="${p.y}" x2="${w - 4}" y2="${nutY[i]}"
-           stroke="rgba(220,210,180,0.72)" stroke-width="${stringWidths[i]}" stroke-linecap="round" />`
-  ).join('');
-
-  const pegMarks = pegs.map((p, i) => `
-    <g class="peg" data-string="${i}" tabindex="0" role="button"
-       aria-label="Jouer ${STRING_LABELS[i]} à vide">
-      <circle cx="${p.x + 0.6}" cy="${p.y + 1.8}" r="9" fill="rgba(0,0,0,0.45)" />
-      <circle cx="${p.x}" cy="${p.y}" r="9" fill="url(#pegBushing)" stroke="#16181b" stroke-width="0.6" />
-      <circle cx="${p.x}" cy="${p.y}" r="6.4" fill="url(#pegPost)" stroke="rgba(18,20,24,0.55)" stroke-width="0.4" />
-      <circle cx="${p.x}" cy="${p.y}" r="1.7" fill="#08090b" />
-      <ellipse cx="${p.x - 2.1}" cy="${p.y - 2.6}" rx="2.4" ry="1.5" fill="rgba(255,255,255,0.62)" />
-      <circle class="peg-hit" cx="${p.x}" cy="${p.y}" r="14" fill="transparent" />
-    </g>
-  `).join('');
-
-  // Manettes (style keystone Kluson) : trapèzes qui dépassent au-delà du body,
-  // dessinés AVANT la silhouette pour que la partie intérieure soit masquée.
-  const knobs = pegs.map((p) => {
-    const isTop = p.y < 65;
-    const innerHW = 5;     // demi-largeur côté peg
-    const outerHW = 7.5;   // demi-largeur côté extérieur
-    const outerY = isTop ? -10 : 140;
-    const midY = isTop ? -1 : 131;
-    return `
-      <polygon points="${p.x - innerHW},${p.y} ${p.x + innerHW},${p.y} ${p.x + outerHW},${outerY} ${p.x - outerHW},${outerY}"
-               fill="url(#knobMetal)" stroke="#0d0f12" stroke-width="0.7" stroke-linejoin="round" />
-      <line x1="${p.x - outerHW + 1.5}" y1="${midY}" x2="${p.x + outerHW - 1.5}" y2="${midY}"
-            stroke="rgba(0,0,0,0.35)" stroke-width="0.5" />
-    `;
-  }).join('');
-
-  return `
-    <svg viewBox="0 -16 ${w} 162" xmlns="http://www.w3.org/2000/svg"
-         class="headstock-svg" role="img" aria-label="Tête de guitare — clique une mécanique pour entendre la corde à vide">
-      <defs>
-        <linearGradient id="headWood" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#3a230f"/>
-          <stop offset="0.5" stop-color="#22120a"/>
-          <stop offset="1" stop-color="#3a230f"/>
-        </linearGradient>
-        <radialGradient id="pegBushing" cx="0.35" cy="0.30" r="0.90">
-          <stop offset="0"    stop-color="#dcdee1"/>
-          <stop offset="0.45" stop-color="#9d9fa3"/>
-          <stop offset="0.85" stop-color="#4d4f53"/>
-          <stop offset="1"    stop-color="#1f2125"/>
-        </radialGradient>
-        <radialGradient id="pegPost" cx="0.35" cy="0.30" r="0.85">
-          <stop offset="0"    stop-color="#f4f5f7"/>
-          <stop offset="0.5"  stop-color="#b6b9bd"/>
-          <stop offset="1"    stop-color="#5a5c60"/>
-        </radialGradient>
-        <linearGradient id="nutBone" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#f4ecd8"/>
-          <stop offset="1" stop-color="#c8bd9a"/>
-        </linearGradient>
-        <linearGradient id="knobMetal" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0"    stop-color="#3a3c40"/>
-          <stop offset="0.30" stop-color="#b6b9bc"/>
-          <stop offset="0.55" stop-color="#eef0f2"/>
-          <stop offset="0.78" stop-color="#9c9ea2"/>
-          <stop offset="1"    stop-color="#3a3c40"/>
-        </linearGradient>
-      </defs>
-      ${knobs}
-      <path d="${silhouette}" fill="url(#headWood)" stroke="rgba(0,0,0,0.55)" stroke-width="0.8" />
-      <text x="${(w - 4) / 2}" y="${h / 2 + 7}" text-anchor="middle"
-            font-family="Allura, cursive" font-size="38"
-            fill="rgba(245,177,74,0.82)"
-            style="paint-order: stroke; stroke: rgba(0,0,0,0.45); stroke-width: 0.7">Fretboard</text>
-      ${strings}
-      ${pegMarks}
-      <rect x="${w - 4}" y="24" width="4" height="82" fill="url(#nutBone)" />
-    </svg>
-  `;
-}
-
-function buildHeroFretboardSVG() {
-  // Grand manche en filigrane pour le fond du hero.
-  const w = 1400, h = 360, frets = 14, strings = 6;
-  const xs = [];
-  for (let n = 0; n <= frets; n++) {
-    xs.push(40 + (w - 80) * (1 - Math.pow(2, -n / 12)) / (1 - Math.pow(2, -frets / 12)));
-  }
-  const yStep = (h - 60) / (strings - 1);
-  const fretLines = xs.map((x, i) =>
-    `<line x1="${x}" y1="20" x2="${x}" y2="${h - 40}" stroke="rgba(255,255,255,${i === 0 ? 0.18 : 0.06})" stroke-width="${i === 0 ? 4 : 1.3}" />`
-  ).join('');
-  const stringLines = Array.from({ length: strings }, (_, i) =>
-    `<line x1="40" y1="${30 + i * yStep}" x2="${w - 40}" y2="${30 + i * yStep}" stroke="rgba(255,255,255,0.10)" stroke-width="${0.7 + (strings - 1 - i) * 0.2}" />`
-  ).join('');
-  const inlays = [3, 5, 7, 9, 12].map((f) => {
-    if (f >= xs.length) return '';
-    const cx = (xs[f - 1] + xs[f]) / 2;
-    if (f === 12) {
-      return `<circle cx="${cx}" cy="${30 + yStep * 1}" r="4" fill="rgba(255,255,255,0.10)"/>
-              <circle cx="${cx}" cy="${30 + yStep * 4}" r="4" fill="rgba(255,255,255,0.10)"/>`;
-    }
-    return `<circle cx="${cx}" cy="${h / 2}" r="4" fill="rgba(255,255,255,0.10)"/>`;
-  }).join('');
-  return `
-    <svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"
-         class="hero-fretboard-svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
-      ${fretLines}
-      ${stringLines}
-      ${inlays}
     </svg>
   `;
 }
@@ -398,9 +161,7 @@ export function mountLanding(host) {
         ${buildHeroFretboardSVG()}
       </div>
       <div class="parallax-layer parallax-notes" data-speed="0.55" aria-hidden="true">
-        ${NATURALS.map((n, i) =>
-          `<span class="floating-note" style="--i:${i}">${n}</span>`
-        ).join('')}
+        ${NATURALS.map((n, i) => `<span class="floating-note" style="--i:${i}">${n}</span>`).join('')}
       </div>
       <div class="landing-hero-content parallax-layer" data-speed="0.85">
         <h1 class="landing-title">Fretboard</h1>
@@ -515,22 +276,19 @@ export function mountLanding(host) {
   `;
   host.appendChild(wrap);
 
-  // Parallaxe : translate Y proportionnel au scroll, throttle rAF.
+  // Parallaxe : translateY proportionnel au scroll, throttle rAF.
   const layers = [...wrap.querySelectorAll('.parallax-layer')].map((el) => ({
     el,
     speed: parseFloat(el.dataset.speed || '0'),
   }));
+  const heroContent = wrap.querySelector('.landing-hero-content');
   let ticking = false;
   function apply() {
     const y = window.scrollY;
     for (const { el, speed } of layers) {
       el.style.transform = `translate3d(0, ${(-y * speed).toFixed(2)}px, 0)`;
     }
-    const hero = wrap.querySelector('.landing-hero-content');
-    if (hero) {
-      const fade = Math.max(0, 1 - y / 500);
-      hero.style.opacity = String(fade);
-    }
+    if (heroContent) heroContent.style.opacity = String(Math.max(0, 1 - y / 500));
     document.body.classList.toggle('topbar-revealed', y > 360);
     ticking = false;
   }
@@ -542,32 +300,11 @@ export function mountLanding(host) {
   window.addEventListener('scroll', onScroll, { passive: true });
   apply();
 
-  // Mécaniques de la tête : clic / clavier joue la corde à vide correspondante.
-  const headstock = wrap.querySelector('.headstock');
-  function pluckString(idx) {
-    const t = TUNING[idx];
-    if (!t) return;
-    playNote(frequencyOf(midiOf({ noteIndex: t.note, octave: t.octave })));
-  }
-  function onPegActivate(e) {
-    const peg = e.target.closest('[data-string]');
-    if (!peg) return;
-    e.preventDefault();
-    peg.classList.add('peg-active');
-    setTimeout(() => peg.classList.remove('peg-active'), 320);
-    pluckString(+peg.dataset.string);
-  }
-  function onPegKey(e) {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    onPegActivate(e);
-  }
-  headstock?.addEventListener('click', onPegActivate);
-  headstock?.addEventListener('keydown', onPegKey);
+  const detachHeadstock = attachHeadstockHandlers(wrap.querySelector('.headstock'));
 
   return () => {
     window.removeEventListener('scroll', onScroll);
-    headstock?.removeEventListener('click', onPegActivate);
-    headstock?.removeEventListener('keydown', onPegKey);
+    detachHeadstock();
     document.body.classList.remove('topbar-revealed');
     window.scrollTo({ top: 0 });
   };

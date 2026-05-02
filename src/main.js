@@ -1,5 +1,6 @@
 import './style.css';
-import { mountLanding, buildHeadstock } from './views/landing.js';
+import { mountLanding } from './views/landing.js';
+import { buildHeadstock } from './views/headstock.js';
 import { mountHome } from './views/home.js';
 import { mountGame } from './views/game.js';
 import { mountLevels } from './views/levels.js';
@@ -8,9 +9,8 @@ import { mountTriads } from './views/triads.js';
 import { preloadSamples } from './audio.js';
 import { isUnlocked, MAX_LEVEL } from './progression.js';
 
-// Préchargement immédiat des échantillons de guitare (CORS, ~13 MP3 légers).
-// Garantit que même un clic sur un peg de la home utilise la vraie guitare,
-// pas le synth de fallback.
+// Préchargement au démarrage : un clic sur un peg de la home doit déjà
+// utiliser le sampler de guitare, pas le synth de fallback.
 preloadSamples();
 
 const view = document.getElementById('view');
@@ -20,6 +20,14 @@ const topLinks = document.querySelectorAll('.topbar-links a');
 // Tête de guitare décorative à gauche du menu de la topbar.
 const topHeadstock = document.querySelector('.topbar-headstock');
 if (topHeadstock) topHeadstock.innerHTML = buildHeadstock();
+
+const ROUTES = {
+  '#/':         (v) => mountLanding(v),
+  '#/manche':   (v) => mountHome(v),
+  '#/accords':  (v) => mountChords(v),
+  '#/triades':  (v) => mountTriads(v),
+  '#/game':     (v) => mountLevels(v),
+};
 
 let cleanup = null;
 
@@ -32,10 +40,10 @@ function parseGameLevel(hash) {
 }
 
 function setActive(hash) {
-  const navHash = hash.startsWith('#/game')     ? '#/game'
-                : hash.startsWith('#/manche')   ? '#/manche'
-                : hash.startsWith('#/accords')  ? '#/accords'
-                : hash.startsWith('#/triades')  ? '#/triades'
+  const navHash = hash.startsWith('#/game')    ? '#/game'
+                : hash.startsWith('#/manche')  ? '#/manche'
+                : hash.startsWith('#/accords') ? '#/accords'
+                : hash.startsWith('#/triades') ? '#/triades'
                 : null;
   topLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === navHash));
   body.classList.toggle('is-landing', hash === '#/' || hash === '');
@@ -47,24 +55,9 @@ function route() {
   view.replaceChildren();
   setActive(hash);
 
-  if (hash === '#/' || hash === '') {
-    cleanup = mountLanding(view) || null;
-    return;
-  }
-  if (hash === '#/manche') {
-    cleanup = mountHome(view) || null;
-    return;
-  }
-  if (hash === '#/accords') {
-    cleanup = mountChords(view) || null;
-    return;
-  }
-  if (hash === '#/triades') {
-    cleanup = mountTriads(view) || null;
-    return;
-  }
-  if (hash === '#/game') {
-    cleanup = mountLevels(view) || null;
+  const direct = ROUTES[hash];
+  if (direct) {
+    cleanup = direct(view) || null;
     return;
   }
   const lvl = parseGameLevel(hash);
@@ -85,6 +78,7 @@ if (import.meta.hot) {
   import.meta.hot.accept(
     [
       './views/landing.js',
+      './views/headstock.js',
       './views/home.js',
       './views/game.js',
       './views/levels.js',
@@ -95,6 +89,9 @@ if (import.meta.hot) {
       './audio.js',
       './pitch.js',
       './progression.js',
+      './theory.js',
+      './svg/svg-utils.js',
+      './svg/mini-fretboard.js',
     ],
     () => import.meta.hot.invalidate()
   );

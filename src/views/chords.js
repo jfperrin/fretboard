@@ -1,65 +1,22 @@
 import { midiOf, frequencyOf } from '../notes.js';
-import { playNote, preloadSamples } from '../audio.js';
+import { playNote } from '../audio.js';
+import { TRIAD_INTERVALS, CYCLE_OF_FIFTHS } from '../theory.js';
+import { SVG_NS, polar, annularSectorPath, keyMaskPath } from '../svg/svg-utils.js';
 
-// Cycle des quintes (12h, 1h, ..., 11h). Indices NOTES_FR (0..11, Do=0).
-const MAJ_NOTE_IDX = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5];
-// Étiquettes affichées : ♯ pour le côté ascendant (1..6), ♭ pour le descendant (7..11).
-const MAJ_LABELS = ['Do', 'Sol', 'Ré', 'La', 'Mi', 'Si', 'Fa♯', 'Ré♭', 'La♭', 'Mi♭', 'Si♭', 'Fa'];
-// Tonique mineure relative à chaque majeur (3 demi-tons sous = +9 mod 12).
-const MIN_LABELS = ['La', 'Mi', 'Si', 'Fa♯', 'Do♯', 'Sol♯', 'Ré♯', 'Si♭', 'Fa', 'Do', 'Sol', 'Ré'];
-// Septième degré diminué (vii°) : un demi-ton sous la tonique majeure (+11 mod 12).
-const DIM_LABELS = ['Si', 'Fa♯', 'Do♯', 'Sol♯', 'Ré♯', 'La♯', 'Mi♯', 'Do', 'Sol', 'Ré', 'La', 'Mi'];
+const { majIndex: MAJ_NOTE_IDX, majLabels: MAJ_LABELS, minLabels: MIN_LABELS, dimLabels: DIM_LABELS } = CYCLE_OF_FIFTHS;
 
 const SECTOR_DEG = 30;
 const R_DIM_OUT = 175, R_DIM_IN = 138;
 const R_MAJ_OUT = 138, R_MAJ_IN = 95;
 const R_MIN_OUT = 95,  R_MIN_IN = 50;
 
-const TRIAD_INTERVALS = { maj: [0, 4, 7], min: [0, 3, 7], dim: [0, 3, 6] };
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-function polar(r, deg) {
-  // Convention : 0° = 12h, sens horaire visuellement (compatible y-down SVG).
-  const rad = (deg - 90) * Math.PI / 180;
-  return [Math.cos(rad) * r, Math.sin(rad) * r];
-}
-
-function annularSectorPath(rIn, rOut, deg1, deg2) {
-  const [x1, y1] = polar(rIn,  deg1);
-  const [x2, y2] = polar(rOut, deg1);
-  const [x3, y3] = polar(rOut, deg2);
-  const [x4, y4] = polar(rIn,  deg2);
-  const large = (deg2 - deg1) > 180 ? 1 : 0;
-  return `M ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)} A ${rOut} ${rOut} 0 ${large} 1 ${x3.toFixed(2)} ${y3.toFixed(2)} L ${x4.toFixed(2)} ${y4.toFixed(2)} A ${rIn} ${rIn} 0 ${large} 0 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`;
-}
-
-function maskOutlinePath() {
-  // Contour de la "clé" : 1 case dim au-dessus, 3 majeures au milieu, 3 mineures en dedans.
-  const fmt = (r, a) => polar(r, a).map(v => v.toFixed(2)).join(' ');
-  return [
-    `M ${fmt(R_MAJ_OUT, -45)}`,
-    `A ${R_MAJ_OUT} ${R_MAJ_OUT} 0 0 1 ${fmt(R_MAJ_OUT, -15)}`,
-    `L ${fmt(R_DIM_OUT, -15)}`,
-    `A ${R_DIM_OUT} ${R_DIM_OUT} 0 0 1 ${fmt(R_DIM_OUT, 15)}`,
-    `L ${fmt(R_MAJ_OUT, 15)}`,
-    `A ${R_MAJ_OUT} ${R_MAJ_OUT} 0 0 1 ${fmt(R_MAJ_OUT, 45)}`,
-    `L ${fmt(R_MIN_IN, 45)}`,
-    `A ${R_MIN_IN} ${R_MIN_IN} 0 0 0 ${fmt(R_MIN_IN, -45)}`,
-    'Z',
-  ].join(' ');
-}
-
 function rootMidi(noteIdx) {
   return midiOf({ noteIndex: noteIdx, octave: 3 });
 }
 
-function triadFreqs(rootIdx, quality) {
-  return TRIAD_INTERVALS[quality].map(d => frequencyOf(rootMidi(rootIdx) + d));
-}
-
 function playTriad(rootIdx, quality) {
-  for (const f of triadFreqs(rootIdx, quality)) {
-    playNote(f, { duration: 1.4, gain: 0.55 });
+  for (const d of TRIAD_INTERVALS[quality]) {
+    playNote(frequencyOf(rootMidi(rootIdx) + d), { duration: 1.4, gain: 0.55 });
   }
 }
 
@@ -68,6 +25,16 @@ function sectorFill(quality, i) {
   if (quality === 'dim') return `hsl(${hue}, 62%, 70%)`;
   if (quality === 'maj') return `hsl(${hue}, 58%, 56%)`;
   return                        `hsl(${hue}, 42%, 38%)`;
+}
+
+function setAttrs(node, attrs) {
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, String(v));
+}
+function svgEl(name, attrs = {}, text) {
+  const n = document.createElementNS(SVG_NS, name);
+  setAttrs(n, attrs);
+  if (text !== undefined) n.textContent = text;
+  return n;
 }
 
 export function mountChords(host) {
@@ -97,72 +64,46 @@ export function mountChords(host) {
   const maskG   = wrap.querySelector('.wheel-mask');
   const list    = wrap.querySelector('.chord-progression-list');
 
+  // --- Construction des 3 anneaux (dim, maj, min) ---
   const labelSlots = []; // { el, baseAngleDeg, radius }
 
-  function buildRing(quality, rIn, rOut, noteIdxFor, labelFor, suffix) {
+  const RINGS = [
+    { quality: 'dim', rIn: R_DIM_IN, rOut: R_DIM_OUT, noteIdxFor: i => (MAJ_NOTE_IDX[i] + 11) % 12, labelFor: i => DIM_LABELS[i], suffix: '°'  },
+    { quality: 'maj', rIn: R_MAJ_IN, rOut: R_MAJ_OUT, noteIdxFor: i =>  MAJ_NOTE_IDX[i],            labelFor: i => MAJ_LABELS[i], suffix: ''   },
+    { quality: 'min', rIn: R_MIN_IN, rOut: R_MIN_OUT, noteIdxFor: i => (MAJ_NOTE_IDX[i] + 9)  % 12, labelFor: i => MIN_LABELS[i], suffix: ' m' },
+  ];
+  for (const { quality, rIn, rOut, noteIdxFor, labelFor, suffix } of RINGS) {
     for (let i = 0; i < 12; i++) {
       const start = i * SECTOR_DEG - SECTOR_DEG / 2;
       const end   = start + SECTOR_DEG;
 
-      const path = document.createElementNS(SVG_NS, 'path');
-      path.setAttribute('d', annularSectorPath(rIn, rOut, start, end));
-      path.setAttribute('class', `wheel-sector wheel-sector-${quality}`);
-      path.setAttribute('data-note-index', String(noteIdxFor(i)));
-      path.setAttribute('data-quality', quality);
-      path.setAttribute('fill', sectorFill(quality, i));
-      disc.appendChild(path);
+      disc.appendChild(svgEl('path', {
+        d: annularSectorPath(rIn, rOut, start, end),
+        class: `wheel-sector wheel-sector-${quality}`,
+        'data-note-index': noteIdxFor(i),
+        'data-quality': quality,
+        fill: sectorFill(quality, i),
+      }));
 
-      const text = document.createElementNS(SVG_NS, 'text');
-      text.setAttribute('class', `wheel-label wheel-label-${quality}`);
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', 'central');
-      text.textContent = labelFor(i) + suffix;
+      const text = svgEl('text', {
+        class: `wheel-label wheel-label-${quality}`,
+        'text-anchor': 'middle', 'dominant-baseline': 'central',
+      }, labelFor(i) + suffix);
       labelsG.appendChild(text);
-
-      labelSlots.push({
-        el: text,
-        baseAngleDeg: i * SECTOR_DEG,
-        radius: (rIn + rOut) / 2,
-      });
+      labelSlots.push({ el: text, baseAngleDeg: i * SECTOR_DEG, radius: (rIn + rOut) / 2 });
     }
   }
 
-  buildRing('dim', R_DIM_IN, R_DIM_OUT, i => (MAJ_NOTE_IDX[i] + 11) % 12, i => DIM_LABELS[i], '°');
-  buildRing('maj', R_MAJ_IN, R_MAJ_OUT, i => MAJ_NOTE_IDX[i],              i => MAJ_LABELS[i], '');
-  buildRing('min', R_MIN_IN, R_MIN_OUT, i => (MAJ_NOTE_IDX[i] + 9)  % 12, i => MIN_LABELS[i], ' m');
-
   // --- Masque fixe ---
-  const outline = document.createElementNS(SVG_NS, 'path');
-  outline.setAttribute('d', maskOutlinePath());
-  outline.setAttribute('class', 'wheel-mask-outline');
-  maskG.appendChild(outline);
+  maskG.appendChild(svgEl('path', { d: keyMaskPath({ rDimOut: R_DIM_OUT, rMajOut: R_MAJ_OUT, rInner: R_MIN_IN }), class: 'wheel-mask-outline' }));
+  maskG.appendChild(svgEl('circle', { cx: 0, cy: 0, r: R_MIN_IN, class: 'wheel-center' }));
 
-  const center = document.createElementNS(SVG_NS, 'circle');
-  center.setAttribute('cx', '0');
-  center.setAttribute('cy', '0');
-  center.setAttribute('r', String(R_MIN_IN));
-  center.setAttribute('class', 'wheel-center');
-  maskG.appendChild(center);
-
-  const centerTitle = document.createElementNS(SVG_NS, 'text');
-  centerTitle.setAttribute('class', 'wheel-center-text');
-  centerTitle.setAttribute('text-anchor', 'middle');
-  centerTitle.setAttribute('dominant-baseline', 'central');
-  centerTitle.setAttribute('x', '0');
-  centerTitle.setAttribute('y', '-6');
+  const centerTitle    = svgEl('text', { class: 'wheel-center-text',    'text-anchor': 'middle', 'dominant-baseline': 'central', x: 0, y: -6 });
+  const centerSubtitle = svgEl('text', { class: 'wheel-center-subtext', 'text-anchor': 'middle', 'dominant-baseline': 'central', x: 0, y: 20 }, 'majeur');
   maskG.appendChild(centerTitle);
-
-  const centerSubtitle = document.createElementNS(SVG_NS, 'text');
-  centerSubtitle.setAttribute('class', 'wheel-center-subtext');
-  centerSubtitle.setAttribute('text-anchor', 'middle');
-  centerSubtitle.setAttribute('dominant-baseline', 'central');
-  centerSubtitle.setAttribute('x', '0');
-  centerSubtitle.setAttribute('y', '20');
-  centerSubtitle.textContent = 'majeur';
   maskG.appendChild(centerSubtitle);
 
-  // Degrés inline (ambre, sans pastille), placés en haut de chaque cellule.
-  // Tailles variables : maj plus grand car ce sont les degrés primaires (I, IV, V).
+  // Degrés inline (ambre, sans pastille), un par cellule de la clé.
   const ROMAN_TAGS = [
     { label: 'vii°', angle:   0, r: R_DIM_OUT - 6, quality: 'dim' },
     { label: 'IV',   angle: -30, r: R_MAJ_OUT - 7, quality: 'maj' },
@@ -174,19 +115,16 @@ export function mountChords(host) {
   ];
   for (const tag of ROMAN_TAGS) {
     const [x, y] = polar(tag.r, tag.angle);
-    const t = document.createElementNS(SVG_NS, 'text');
-    t.setAttribute('class', `wheel-mask-degree-inline wheel-mask-degree-inline-${tag.quality}`);
-    t.setAttribute('x', x.toFixed(2));
-    t.setAttribute('y', y.toFixed(2));
-    t.setAttribute('text-anchor', 'middle');
-    t.setAttribute('dominant-baseline', 'central');
-    t.textContent = tag.label;
-    maskG.appendChild(t);
+    maskG.appendChild(svgEl('text', {
+      class: `wheel-mask-degree-inline wheel-mask-degree-inline-${tag.quality}`,
+      x: x.toFixed(2), y: y.toFixed(2),
+      'text-anchor': 'middle', 'dominant-baseline': 'central',
+    }, tag.label));
   }
 
   // --- État rotation + drag ---
   let angleDeg = 0;            // angle "snappé" courant (multiple de 30°)
-  let currentApplied = 0;      // angle appliqué en dernier (peut être pendant animation)
+  let currentApplied = 0;
   let animFrame = 0;
   let dragging = false;
   let lastPointerAngle = 0;
@@ -264,20 +202,16 @@ export function mountChords(host) {
 
     if (!dragMoved && elapsed < 350 && downSector) {
       animateTo(angleDeg);
-      const idx = Number(downSector.getAttribute('data-note-index'));
-      const q   = downSector.getAttribute('data-quality');
-      playTriad(idx, q);
+      playTriad(Number(downSector.getAttribute('data-note-index')), downSector.getAttribute('data-quality'));
       return;
     }
 
-    let newAngle = dragStartDiscAngle + cumulativeDelta;
-    newAngle = Math.round(newAngle / SECTOR_DEG) * SECTOR_DEG;
-    angleDeg = newAngle;
+    angleDeg = Math.round((dragStartDiscAngle + cumulativeDelta) / SECTOR_DEG) * SECTOR_DEG;
     animateTo(angleDeg);
     renderProgression();
   }
 
-  // Molette : un cran = un secteur (30°). deltaY > 0 (scroll bas) = sens horaire.
+  // Molette : un cran = un secteur (30°).
   let wheelLockUntil = 0;
   function onWheel(ev) {
     ev.preventDefault();
@@ -302,33 +236,24 @@ export function mountChords(host) {
     const idxIV = (tonic - 1 + 12) % 12;
     const idxV  = (tonic + 1) % 12;
 
-    const I    = MAJ_LABELS[tonic];
-    const IV   = MAJ_LABELS[idxIV];
-    const V    = MAJ_LABELS[idxV];
-    const ii   = MIN_LABELS[idxIV] + ' m';
-    const iii  = MIN_LABELS[idxV]  + ' m';
-    const vi   = MIN_LABELS[tonic] + ' m';
-    const viio = DIM_LABELS[tonic] + '°';
-
     const items = [
-      ['I',    I],
-      ['ii',   ii],
-      ['iii',  iii],
-      ['IV',   IV],
-      ['V',    V],
-      ['vi',   vi],
-      ['vii°', viio],
+      ['I',    MAJ_LABELS[tonic]],
+      ['ii',   MIN_LABELS[idxIV] + ' m'],
+      ['iii',  MIN_LABELS[idxV]  + ' m'],
+      ['IV',   MAJ_LABELS[idxIV]],
+      ['V',    MAJ_LABELS[idxV]],
+      ['vi',   MIN_LABELS[tonic] + ' m'],
+      ['vii°', DIM_LABELS[tonic] + '°'],
     ];
     list.innerHTML = items
       .map(([d, c]) => `<span class="degree-pair"><span class="degree">${d}</span><span class="chord">${c}</span></span>`)
       .join('');
 
-    centerTitle.textContent = I;
+    centerTitle.textContent = MAJ_LABELS[tonic];
   }
 
   applyRotation(0);
   renderProgression();
-  preloadSamples();
 
   return () => {
     if (animFrame) cancelAnimationFrame(animFrame);

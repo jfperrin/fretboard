@@ -1,6 +1,6 @@
 import { NOTES_FR, midiOf, frequencyOf, noteAtFret } from '../notes.js';
 import { createFretboard } from '../fretboard.js';
-import { playNote, preloadSamples } from '../audio.js';
+import { playNote } from '../audio.js';
 
 export function mountHome(host) {
   const wrap = document.createElement('div');
@@ -49,6 +49,5 @@ export function mountHome(host) {
   }
 
   board.onPositionClick(({ frequency }) => playNote(frequency));
-  preloadSamples();
   selectNote(0);
 }

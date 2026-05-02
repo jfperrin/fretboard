@@ -1,8 +1,7 @@
 import { createFretboard } from '../fretboard.js';
 import { noteAtFret, midiOf, frequencyOf, noteLabel, NOTES_FR } from '../notes.js';
 import { playNote } from '../audio.js';
-
-const TRIAD_INTERVALS = { maj: [0, 4, 7], min: [0, 3, 7], dim: [0, 3, 6] };
+import { TRIAD_INTERVALS } from '../theory.js';
 
 const STRING_GROUPS = [
   { indices: [3, 4, 5], label: 'Cordes 1 · 2 · 3', openNotes: 'Sol · Si · Mi' },
@@ -10,44 +9,44 @@ const STRING_GROUPS = [
   { indices: [0, 1, 2], label: 'Cordes 4 · 5 · 6', openNotes: 'Mi · La · Ré' },
 ];
 
+const ROLE_BY_INTERVAL_IDX = ['root', 'third', 'fifth'];
+
 function findVoicings(stringGroup, root, intervals) {
   const [sA, sB, sC] = stringGroup;
-  const noteSet = new Set(intervals.map(iv => (root + iv) % 12));
-  const roleOf = (ni) => {
-    if (ni === (root + intervals[0]) % 12) return 'root';
-    if (ni === (root + intervals[1]) % 12) return 'third';
-    return 'fifth';
-  };
+  const noteToRole = new Map(intervals.map((iv, i) => [(root + iv) % 12, ROLE_BY_INTERVAL_IDX[i]]));
+  const has = (n) => noteToRole.has(n);
 
-  const voicings = [];
+  const out = [];
+  const seen = new Set();
+
   for (let fA = 0; fA <= 12; fA++) {
     const nA = noteAtFret(sA, fA).noteIndex;
-    if (!noteSet.has(nA)) continue;
-    const lo = Math.max(0, fA - 4);
-    const hi = fA + 4;
+    if (!has(nA)) continue;
+    const lo = Math.max(0, fA - 4), hi = fA + 4;
     for (let fB = lo; fB <= hi; fB++) {
       const nB = noteAtFret(sB, fB).noteIndex;
-      if (!noteSet.has(nB) || nB === nA) continue;
+      if (!has(nB) || nB === nA) continue;
       for (let fC = lo; fC <= hi; fC++) {
         const nC = noteAtFret(sC, fC).noteIndex;
-        if (!noteSet.has(nC) || nC === nA || nC === nB) continue;
-        const span = Math.max(fA, fB, fC) - Math.min(fA, fB, fC);
-        if (span > 4) continue;
-        voicings.push([
-          { stringIdx: sA, fret: fA, role: roleOf(nA), label: noteLabel(nA) },
-          { stringIdx: sB, fret: fB, role: roleOf(nB), label: noteLabel(nB) },
-          { stringIdx: sC, fret: fC, role: roleOf(nC), label: noteLabel(nC) },
+        if (!has(nC) || nC === nA || nC === nB) continue;
+        if (Math.max(fA, fB, fC) - Math.min(fA, fB, fC) > 4) continue;
+        const key = `${fA},${fB},${fC}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push([
+          { stringIdx: sA, fret: fA, role: noteToRole.get(nA), label: noteLabel(nA) },
+          { stringIdx: sB, fret: fB, role: noteToRole.get(nB), label: noteLabel(nB) },
+          { stringIdx: sC, fret: fC, role: noteToRole.get(nC), label: noteLabel(nC) },
         ]);
       }
     }
   }
-  const seen = new Set();
-  return voicings.filter(v => {
-    const key = v.map(p => p.fret).join(',');
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return out;
+}
+
+function setActive(container, btn) {
+  container.querySelectorAll('.active').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 }
 
 export function mountTriads(host) {
@@ -82,17 +81,15 @@ export function mountTriads(host) {
   let selectedQuality = 'maj';
 
   const noteContainer = host.querySelector('.triads-notes');
-  NOTES_FR.forEach((name, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'note-btn' + (i === 0 ? ' active' : '');
-    btn.textContent = name;
-    btn.addEventListener('click', () => {
-      selectedRoot = i;
-      noteContainer.querySelectorAll('.note-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderAll();
-    });
-    noteContainer.appendChild(btn);
+  noteContainer.innerHTML = NOTES_FR.map((name, i) =>
+    `<button class="note-btn${i === 0 ? ' active' : ''}" data-idx="${i}">${name}</button>`
+  ).join('');
+  noteContainer.addEventListener('click', (e) => {
+    const btn = e.target.closest('.note-btn');
+    if (!btn) return;
+    selectedRoot = +btn.dataset.idx;
+    setActive(noteContainer, btn);
+    renderAll();
   });
 
   const qualityContainer = host.querySelector('.triads-quality');
@@ -100,8 +97,7 @@ export function mountTriads(host) {
     const btn = e.target.closest('.quality-btn');
     if (!btn) return;
     selectedQuality = btn.dataset.quality;
-    qualityContainer.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    setActive(qualityContainer, btn);
     renderAll();
   });
 
@@ -109,24 +105,17 @@ export function mountTriads(host) {
   const boards = STRING_GROUPS.map(group => {
     const wrapper = document.createElement('div');
     wrapper.className = 'triad-group';
-    wrapper.innerHTML = `<div class="triad-group-header">${group.label} <span class="triad-open-notes">— ${group.openNotes}</span></div>`;
-    const boardContainer = document.createElement('div');
-    boardContainer.className = 'triad-board-container';
-    wrapper.appendChild(boardContainer);
+    wrapper.innerHTML = `
+      <div class="triad-group-header">${group.label} <span class="triad-open-notes">— ${group.openNotes}</span></div>
+      <div class="triad-board-container"></div>
+    `;
     groupsContainer.appendChild(wrapper);
-    const board = createFretboard(boardContainer, { frets: 15 });
+    const board = createFretboard(wrapper.querySelector('.triad-board-container'), { frets: 15 });
     board.onPositionClick(({ stringIdx, fret }) => {
       const voicings = findVoicings(group.indices, selectedRoot, TRIAD_INTERVALS[selectedQuality]);
-      for (const voicing of voicings) {
-        const match = voicing.find(p => p.stringIdx === stringIdx && p.fret === fret);
-        if (match) {
-          voicing.forEach(p => {
-            const n = noteAtFret(p.stringIdx, p.fret);
-            playNote(frequencyOf(midiOf(n)));
-          });
-          break;
-        }
-      }
+      const v = voicings.find(voicing => voicing.some(p => p.stringIdx === stringIdx && p.fret === fret));
+      if (!v) return;
+      for (const p of v) playNote(frequencyOf(midiOf(noteAtFret(p.stringIdx, p.fret))));
     });
     return board;
   });
@@ -134,8 +123,7 @@ export function mountTriads(host) {
   function renderAll() {
     const intervals = TRIAD_INTERVALS[selectedQuality];
     STRING_GROUPS.forEach((group, i) => {
-      const voicings = findVoicings(group.indices, selectedRoot, intervals);
-      boards[i].highlightTriads(voicings);
+      boards[i].highlightTriads(findVoicings(group.indices, selectedRoot, intervals));
     });
   }
 
