@@ -139,12 +139,13 @@ body.is-landing.topbar-revealed .topbar {
   position: relative;
   z-index: 1;
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 20px;
+  padding: 0 14px;
   height: 90px;
-  max-width: 120px;
+  max-width: 110px;
   text-decoration: none;
   color: rgba(232, 236, 243, 0.50);
   font-size: 0.78rem;
@@ -178,7 +179,7 @@ body.is-landing.topbar-revealed .topbar {
 
 /* Blocs inlay trapézoïdaux ivoire */
 .neck-inlay {
-  flex: 0 0 44px;
+  flex: 0 0 32px;
   position: relative;
   z-index: 1;
   display: flex;
@@ -188,8 +189,8 @@ body.is-landing.topbar-revealed .topbar {
 .neck-inlay::before {
   content: '';
   display: block;
-  width: 28px;
-  height: 64px;
+  width: 22px;
+  height: 56px;
   background: linear-gradient(165deg,
     #f6f0dc 0%,
     #e8d8b0 35%,
@@ -202,11 +203,11 @@ body.is-landing.topbar-revealed .topbar {
 
 .landing-nav { display: inline-flex; margin-top: 8px; }
 
-@media (max-width: 520px) {
+@media (max-width: 768px) {
   .topbar { padding: 0 16px; }
-  .topbar-links a, .landing-nav a { padding: 0 10px; font-size: 0.72rem; height: 76px; }
-  .neck-inlay { flex: 0 0 30px; }
-  .neck-inlay::before { width: 20px; height: 52px; }
+  .topbar-links a, .landing-nav a { padding: 0 10px; max-width: 96px; font-size: 0.72rem; height: 78px; }
+  .neck-inlay { flex: 0 0 24px; }
+  .neck-inlay::before { width: 18px; height: 48px; }
 }
 
 .hero {
