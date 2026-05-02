@@ -164,6 +164,60 @@ function buildChordWheelIllu() {
   `;
 }
 
+function buildTriadsIllu() {
+  // Mini manche (5 frettes, 6 cordes) avec un triangle de triade — root, tierce, quinte
+  // sur 3 cordes adjacentes (cordes 1-2-3 = Sol/Si/Mi aigu, voicing typique Do majeur).
+  const w = 280, h = 110, frets = 5, strings = 6;
+  const xs = [];
+  for (let n = 0; n <= frets; n++) {
+    xs.push(20 + (w - 40) * (1 - Math.pow(2, -n / 12)) / (1 - Math.pow(2, -frets / 12)));
+  }
+  const yStep = (h - 30) / (strings - 1);
+  const fretLines = xs.map((x, i) =>
+    `<line x1="${x}" y1="10" x2="${x}" y2="${h - 15}" stroke="${i === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.18)'}" stroke-width="${i === 0 ? 3 : 1.2}" />`
+  ).join('');
+  const stringLines = Array.from({ length: strings }, (_, i) =>
+    `<line x1="20" y1="${15 + i * yStep}" x2="${w - 20}" y2="${15 + i * yStep}" stroke="rgba(255,255,255,0.32)" stroke-width="${0.6 + (strings - 1 - i) * 0.18}" />`
+  ).join('');
+  const triad = [
+    { string: 3, fret: 5, color: 'var(--accent)',   label: '1' }, // root
+    { string: 4, fret: 5, color: '#ffd28a',         label: '3' }, // tierce
+    { string: 5, fret: 3, color: 'var(--accent-2)', label: '5' }, // quinte
+  ];
+  const points = triad.map(({ string, fret }) => {
+    const cx = (xs[fret - 1] + xs[fret]) / 2;
+    const cy = 15 + string * yStep;
+    return `${cx.toFixed(1)},${cy.toFixed(1)}`;
+  }).join(' ');
+  const dots = triad.map(({ string, fret, color, label }) => {
+    const cx = (xs[fret - 1] + xs[fret]) / 2;
+    const cy = 15 + string * yStep;
+    return `
+      <circle cx="${cx}" cy="${cy}" r="9.5" fill="${color}" stroke="rgba(0,0,0,0.45)" stroke-width="1" />
+      <text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="central"
+            font-family="JetBrains Mono, monospace" font-weight="700" font-size="9"
+            fill="rgba(10,13,18,0.92)">${label}</text>
+    `;
+  }).join('');
+  return `
+    <svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="14" y="6" width="${w - 28}" height="${h - 12}" rx="6"
+            fill="url(#triadWood)" stroke="rgba(255,255,255,0.06)" />
+      <defs>
+        <linearGradient id="triadWood" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#3a2917"/>
+          <stop offset="1" stop-color="#1d130a"/>
+        </linearGradient>
+      </defs>
+      ${fretLines}
+      ${stringLines}
+      <polygon points="${points}" fill="rgba(245, 177, 74, 0.16)"
+               stroke="rgba(245, 177, 74, 0.55)" stroke-width="1.3" stroke-linejoin="round" />
+      ${dots}
+    </svg>
+  `;
+}
+
 function buildEarIllu() {
   // Illustration "jeu d'oreille" : grosse note + onde
   return `
@@ -189,7 +243,7 @@ function buildEarIllu() {
   `;
 }
 
-function buildHeadstock() {
+export function buildHeadstock() {
   // Tête Les Paul stylisée (3+3) accolée à gauche du menu-manche.
   // viewBox 260×130 : tête plus large que le manche (joint 78 = hauteur menu,
   // body 122 au plus large → +22 px de débord en haut/bas). Flares en courbes Q
@@ -290,9 +344,10 @@ function buildHeadstock() {
       </defs>
       ${knobs}
       <path d="${silhouette}" fill="url(#headWood)" stroke="rgba(0,0,0,0.55)" stroke-width="0.8" />
-      <text x="${(w - 4) / 2}" y="${h / 2 + 3}" text-anchor="middle"
-            font-family="Inter, sans-serif" font-size="11" font-weight="700"
-            fill="rgba(245,177,74,0.42)" letter-spacing="0.25em">FB</text>
+      <text x="${(w - 4) / 2}" y="${h / 2 + 7}" text-anchor="middle"
+            font-family="Allura, cursive" font-size="38"
+            fill="rgba(245,177,74,0.82)"
+            style="paint-order: stroke; stroke: rgba(0,0,0,0.45); stroke-width: 0.7">Fretboard</text>
       ${strings}
       ${pegMarks}
       <rect x="${w - 4}" y="24" width="4" height="82" fill="url(#nutBone)" />
@@ -348,11 +403,10 @@ export function mountLanding(host) {
         ).join('')}
       </div>
       <div class="landing-hero-content parallax-layer" data-speed="0.85">
-        <span class="landing-eyebrow">Visualiseur · Roue d'accords · Jeu d'oreille</span>
         <h1 class="landing-title">Fretboard</h1>
         <p class="landing-lede">
-          Apprends les notes du manche en notation française.
-          Visualise, écoute, joue&nbsp;— directement dans le navigateur.
+          Mémorise le manche, construis tes accords, joue à l'oreille.<br>
+          Quatre outils interactifs en notation française&nbsp;— tout dans ton navigateur, sans installation.
         </p>
         <div class="landing-neck">
           <div class="headstock">${buildHeadstock()}</div>
@@ -376,8 +430,8 @@ export function mountLanding(host) {
     <section class="landing-section landing-modes">
       <header class="section-header">
         <span class="section-eyebrow">02 · Outils</span>
-        <h2>Visualise. Comprends. Joue.</h2>
-        <p class="section-sub">Trois entrées qui se complètent — pour mémoriser le manche, théoriser les progressions et s'entraîner à l'oreille.</p>
+        <h2>Visualise. Comprends. Construis. Joue.</h2>
+        <p class="section-sub">Quatre outils complémentaires&nbsp;— mémoriser le manche, théoriser les progressions, construire les voicings et s'entraîner à l'oreille.</p>
       </header>
 
       <div class="bento-grid">
@@ -398,9 +452,19 @@ export function mountLanding(host) {
         <a class="bento-tile cta-visualiser" href="#/manche">
           <div class="bento-illu">${buildMiniFretboard()}</div>
           <div class="bento-body">
-            <span class="bento-tag">Exploration</span>
+            <span class="bento-tag">Exploration · 24 frettes</span>
             <h3>Visualiseur de manche</h3>
-            <p>Toutes les positions de chaque note sur 24 frettes, jouées au sampler de guitare.</p>
+            <p>Affiche toutes les positions d'une note sur le manche, jouées au sampler de guitare. Clique sur n'importe quel marker pour entendre la note exacte.</p>
+            <span class="bento-arrow" aria-hidden="true">→</span>
+          </div>
+        </a>
+
+        <a class="bento-tile cta-triades" href="#/triades">
+          <div class="bento-illu">${buildTriadsIllu()}</div>
+          <div class="bento-body">
+            <span class="bento-tag">Voicings · 3 cordes</span>
+            <h3>Triades d'accord</h3>
+            <p>Toutes les positions des accords majeur, mineur et diminué sur chaque groupe de 3 cordes adjacentes. Repère root, tierce et quinte d'un coup d'œil.</p>
             <span class="bento-arrow" aria-hidden="true">→</span>
           </div>
         </a>
@@ -410,7 +474,7 @@ export function mountLanding(host) {
           <div class="bento-body">
             <span class="bento-tag">Entraînement · 10 niveaux</span>
             <h3>Jeu d'oreille</h3>
-            <p>Reconnais et joue les notes au micro. Progression des 7 naturelles vers les 12 demi-tons.</p>
+            <p>Reconnais une note jouée et reproduis-la au micro. Progression des 7 naturelles vers les 12 demi-tons, avec détection de hauteur en temps réel.</p>
             <span class="bento-arrow" aria-hidden="true">→</span>
           </div>
         </a>
