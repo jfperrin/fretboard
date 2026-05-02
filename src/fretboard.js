@@ -1,4 +1,4 @@
-import { TUNING, STRING_LABELS, noteAtFret, midiOf, frequencyOf, noteLabel } from './notes.js';
+import { STRING_LABELS, noteAtFret, midiOf, frequencyOf, noteLabel } from './notes.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
