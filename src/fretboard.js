@@ -183,8 +183,7 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
 
   container.appendChild(svg);
 
-  // API
-  const api = {
+  return {
     svg,
     fretX,
     stringY,
@@ -311,6 +310,4 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
       }
     },
   };
-
-  return api;
 }
