@@ -191,6 +191,40 @@ function buildMetronomeIllu() {
   `;
 }
 
+function buildTunerIllu() {
+  return `
+    <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="tuner-track" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0"    stop-color="rgba(255,107,107,0.55)" />
+          <stop offset="0.30" stop-color="rgba(245,177,74,0.45)" />
+          <stop offset="0.50" stop-color="rgba(255,255,255,0.18)" />
+          <stop offset="0.70" stop-color="rgba(245,177,74,0.45)" />
+          <stop offset="1"    stop-color="rgba(255,107,107,0.55)" />
+        </linearGradient>
+      </defs>
+      <text x="140" y="44" font-family="JetBrains Mono, monospace" font-weight="700"
+            font-size="36" fill="rgba(232,236,243,0.95)" text-anchor="middle">La</text>
+      <text x="184" y="44" font-family="JetBrains Mono, monospace" font-weight="500"
+            font-size="14" fill="rgba(232,236,243,0.55)">110 Hz</text>
+
+      <g transform="translate(60 70)">
+        <rect x="0" y="0" width="160" height="9" rx="4.5" fill="url(#tuner-track)" />
+        <rect x="70" y="0" width="20" height="9" fill="rgba(120,220,140,0.22)" />
+        <line x1="70" y1="-2" x2="70" y2="11" stroke="rgba(120,220,140,0.45)" stroke-width="0.8" stroke-dasharray="2 2" />
+        <line x1="90" y1="-2" x2="90" y2="11" stroke="rgba(120,220,140,0.45)" stroke-width="0.8" stroke-dasharray="2 2" />
+        <rect x="78" y="-5" width="4" height="19" rx="1.5" fill="rgb(120,220,140)" />
+      </g>
+
+      <g font-family="JetBrains Mono, monospace" font-size="9" fill="rgba(232,236,243,0.45)" text-anchor="middle">
+        <text x="60"  y="98">−50</text>
+        <text x="140" y="98">0</text>
+        <text x="220" y="98">+50</text>
+      </g>
+    </svg>
+  `;
+}
+
 function buildEarIllu() {
   return `
     <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -250,6 +284,7 @@ export function mountLanding(host) {
           <a href="#/accords"><span class="lnm-label">Roue d'accords</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/triades"><span class="lnm-label">Triades d'accord</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/gammes"><span class="lnm-label">Gammes</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/accordeur"><span class="lnm-label">Accordeur</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/game"><span class="lnm-label">Jeu d'oreille</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/metronome"><span class="lnm-label">Métronome</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
         </nav>
@@ -262,9 +297,8 @@ export function mountLanding(host) {
 
     <section class="landing-section landing-modes">
       <header class="section-header">
-        <span class="section-eyebrow">02 · Outils</span>
         <h2>Visualise. Comprends. Construis. Joue.</h2>
-        <p class="section-sub">Quatre outils complémentaires&nbsp;— mémoriser le manche, théoriser les progressions, construire les voicings et s'entraîner à l'oreille.</p>
+        <p class="section-sub">Sept outils complémentaires&nbsp;— mémorisez le manche, théorisez les progressions, construisez les voicings, explorez les gammes, accordez votre guitare, entraînez-vous à l'oreille et suivez le tempo.</p>
       </header>
 
       <div class="bento-grid">
@@ -278,90 +312,74 @@ export function mountLanding(host) {
           </div>
         </a>
 
-        <a class="bento-tile cta-visualiser" href="#/manche">
-          <div class="bento-illu">${buildMiniFretboard()}</div>
-          <div class="bento-body">
-            <span class="bento-tag">Exploration · 24 frettes</span>
-            <h3>Visualiseur de manche</h3>
-            <p>Affiche toutes les positions d'une note sur le manche, jouées au sampler de guitare. Clique sur n'importe quel marker pour entendre la note exacte.</p>
-            <span class="bento-arrow" aria-hidden="true">→</span>
-          </div>
-        </a>
+        <div class="bento-column">
+          <a class="bento-tile cta-triades" href="#/triades">
+            <div class="bento-illu">${buildTriadsIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Voicings · 3 cordes</span>
+              <h3>Triades d'accord</h3>
+              <p>Toutes les positions des accords majeur, mineur et diminué sur chaque groupe de 3 cordes adjacentes. Repère root, tierce et quinte d'un coup d'œil.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
 
-        <a class="bento-tile cta-triades" href="#/triades">
-          <div class="bento-illu">${buildTriadsIllu()}</div>
-          <div class="bento-body">
-            <span class="bento-tag">Voicings · 3 cordes</span>
-            <h3>Triades d'accord</h3>
-            <p>Toutes les positions des accords majeur, mineur et diminué sur chaque groupe de 3 cordes adjacentes. Repère root, tierce et quinte d'un coup d'œil.</p>
-            <span class="bento-arrow" aria-hidden="true">→</span>
-          </div>
-        </a>
+          <a class="bento-tile cta-gammes" href="#/gammes">
+            <span class="bento-badge">Nouveau</span>
+            <div class="bento-illu">${buildScalesIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Gammes · 8 modes</span>
+              <h3>Gammes</h3>
+              <p>Penta mineure, blues, modes diatoniques, mineure harmonique. Visualise toutes les positions et écoute la gamme jouée en boucle au tempo choisi.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
 
-        <a class="bento-tile cta-gammes" href="#/gammes">
-          <span class="bento-badge">Nouveau</span>
-          <div class="bento-illu">${buildScalesIllu()}</div>
-          <div class="bento-body">
-            <span class="bento-tag">Gammes · 8 modes</span>
-            <h3>Gammes</h3>
-            <p>Penta mineure, blues, modes diatoniques, mineure harmonique. Visualise toutes les positions et écoute la gamme jouée en boucle au tempo choisi.</p>
-            <span class="bento-arrow" aria-hidden="true">→</span>
-          </div>
-        </a>
+          <a class="bento-tile cta-accordeur" href="#/accordeur">
+            <span class="bento-badge">Nouveau</span>
+            <div class="bento-illu">${buildTunerIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Accordage · 12 presets</span>
+              <h3>Accordeur</h3>
+              <p>Standard, Drop D, DADGAD, Open G… Notes de référence en boucle et détection au micro avec aiguille de justesse en cents — utilisables ensemble.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+        </div>
 
-        <a class="bento-tile cta-jeu" href="#/game">
-          <div class="bento-illu">${buildEarIllu()}</div>
-          <div class="bento-body">
-            <span class="bento-tag">Entraînement · 10 niveaux</span>
-            <h3>Jeu d'oreille</h3>
-            <p>Reconnais une note jouée et reproduis-la au micro. Progression des 7 naturelles vers les 12 demi-tons, avec détection de hauteur en temps réel.</p>
-            <span class="bento-arrow" aria-hidden="true">→</span>
-          </div>
-        </a>
+        <div class="bento-column">
+          <a class="bento-tile cta-visualiser" href="#/manche">
+            <div class="bento-illu">${buildMiniFretboard()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Exploration · 24 frettes</span>
+              <h3>Visualiseur de manche</h3>
+              <p>Affiche toutes les positions d'une note sur le manche, jouées au sampler de guitare. Clique sur n'importe quel marker pour entendre la note exacte.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
 
-        <a class="bento-tile cta-metronome" href="#/metronome">
-          <div class="bento-illu">${buildMetronomeIllu()}</div>
-          <div class="bento-body">
-            <span class="bento-tag">Tempo · 30 → 280 BPM</span>
-            <h3>Métronome</h3>
-            <p>Quatre timbres de clic, mesures de 2 à 6 temps, ajustement à la molette ou au bouton près. Synthèse Web Audio, timing échantillon-précis.</p>
-            <span class="bento-arrow" aria-hidden="true">→</span>
-          </div>
-        </a>
+          <a class="bento-tile cta-jeu" href="#/game">
+            <div class="bento-illu">${buildEarIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Entraînement · 10 niveaux</span>
+              <h3>Jeu d'oreille</h3>
+              <p>Reconnais une note jouée et reproduis-la au micro. Progression des 7 naturelles vers les 12 demi-tons, avec détection de hauteur en temps réel.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+
+          <a class="bento-tile cta-metronome" href="#/metronome">
+            <div class="bento-illu">${buildMetronomeIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Tempo · 30 → 280 BPM</span>
+              <h3>Métronome</h3>
+              <p>Quatre timbres de clic, mesures de 2 à 6 temps, ajustement à la molette ou au bouton près. Synthèse Web Audio, timing échantillon-précis.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+        </div>
       </div>
     </section>
 
-    <section class="landing-section landing-pitch">
-      <header class="section-header">
-        <span class="section-eyebrow">03 · Pourquoi</span>
-        <h2>Pensé pour la pratique</h2>
-      </header>
-      <ul class="pitch-grid">
-        <li>
-          <span class="pitch-num">01</span>
-          <h4>Notation française</h4>
-          <p>Do · Ré · Mi … partout dans l'interface, comme dans les solfèges.</p>
-        </li>
-        <li>
-          <span class="pitch-num">02</span>
-          <h4>Sampler de guitare</h4>
-          <p>Échantillons réels via Web Audio. Pas de fichier audio à télécharger.</p>
-        </li>
-        <li>
-          <span class="pitch-num">03</span>
-          <h4>Détection au micro</h4>
-          <p>Autocorrélation locale, dans le navigateur. Aucune donnée envoyée.</p>
-        </li>
-      </ul>
-    </section>
-
-    <section class="landing-final">
-      <h2>Prêt à apprendre le manche ?</h2>
-      <div class="landing-cta-row">
-        <a class="btn-primary" href="#/manche">Ouvrir le visualiseur</a>
-        <a class="btn-ghost" href="#/game">Lancer le jeu</a>
-      </div>
-    </section>
   `;
   host.appendChild(wrap);
 

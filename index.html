@@ -15,15 +15,20 @@
   <body>
     <div id="app">
       <nav class="topbar" aria-label="Navigation principale">
-        <a class="topbar-logo" href="#/">
-          <span class="topbar-mark"></span>
-          <span>Fretboard</span>
+        <a class="topbar-logo" href="#/" aria-label="Retour à l'accueil">
+          <span class="topbar-mark" aria-hidden="true"></span>
+          <svg class="topbar-back-arrow" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M10 3 L5 8 L10 13" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="topbar-logo-name">Fretboard</span>
+          <span class="topbar-logo-back">Accueil</span>
         </a>
         <div class="topbar-menu">
           <a href="#/manche">Visualiseur de manche</a>
           <a href="#/accords">Roue d'accords</a>
           <a href="#/triades">Triades d'accord</a>
           <a href="#/gammes">Gammes</a>
+          <a href="#/accordeur">Accordeur</a>
           <a href="#/game">Jeu d'oreille</a>
           <a href="#/metronome">Métronome</a>
         </div>
@@ -31,9 +36,6 @@
 
       <main id="view"></main>
 
-      <footer class="footer">
-        <span>Accordage standard&nbsp;: Mi · La · Ré · Sol · Si · Mi</span>
-      </footer>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>

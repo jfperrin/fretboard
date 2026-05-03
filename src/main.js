@@ -7,6 +7,7 @@ import { mountChords } from './views/chords.js';
 import { mountTriads } from './views/triads.js';
 import { mountScales } from './views/scales.js';
 import { mountMetronome } from './views/metronome.js';
+import { mountTuner } from './views/tuner.js';
 import { preloadSamples } from './audio.js';
 import { isUnlocked, MAX_LEVEL } from './progression.js';
 
@@ -25,6 +26,7 @@ const ROUTES = {
   '#/triades':    (v) => mountTriads(v),
   '#/gammes':     (v) => mountScales(v),
   '#/metronome':  (v) => mountMetronome(v),
+  '#/accordeur':  (v) => mountTuner(v),
   '#/game':       (v) => mountLevels(v),
 };
 
@@ -45,6 +47,7 @@ function setActive(hash) {
                 : hash.startsWith('#/triades')   ? '#/triades'
                 : hash.startsWith('#/gammes')    ? '#/gammes'
                 : hash.startsWith('#/metronome') ? '#/metronome'
+                : hash.startsWith('#/accordeur') ? '#/accordeur'
                 : null;
   topLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === navHash));
   body.classList.toggle('is-landing', hash === '#/' || hash === '');
@@ -87,6 +90,7 @@ if (import.meta.hot) {
       './views/triads.js',
       './views/scales.js',
       './views/metronome.js',
+      './views/tuner.js',
       './fretboard.js',
       './notes.js',
       './audio.js',
