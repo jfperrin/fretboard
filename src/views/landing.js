@@ -333,6 +333,37 @@ function buildArpegesIllu() {
   `;
 }
 
+function buildBackingIllu() {
+  // Forme d'onde + bars de batterie : évoque "groove qui tourne".
+  const W = 280, H = 110;
+  let body = '';
+
+  // Bars de batterie style spectrum
+  const bars = [10, 22, 14, 28, 36, 26, 18, 32, 20, 14, 24, 18, 30, 16, 22];
+  bars.forEach((h, i) => {
+    const x = 16 + i * 12;
+    const y = 80 - h;
+    const fill = i % 4 === 0 ? 'var(--accent)' : 'rgba(86, 194, 255, 0.7)';
+    body += `<rect x="${x}" y="${y}" width="6" height="${h}" rx="1.5" fill="${fill}" opacity="0.85"/>`;
+  });
+
+  // Ligne de basse stylisée (sinusoïdale)
+  body += `<path d="M 16 92 Q 40 86 64 92 T 112 92 T 160 92 T 208 92 T 256 92"
+                 fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>`;
+
+  // Note "12 bars" dans un coin
+  body += `<text x="232" y="22" font-family="JetBrains Mono, monospace"
+                font-weight="700" font-size="13" fill="var(--accent)" text-anchor="end">12 BAR</text>`;
+  body += `<text x="232" y="36" font-family="Inter, sans-serif" font-weight="500"
+                font-size="9" fill="rgba(232,236,243,0.5)" text-anchor="end" letter-spacing="0.18em">BLUES</text>`;
+
+  return `
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${body}
+    </svg>
+  `;
+}
+
 function buildEarIllu() {
   return `
     <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -391,6 +422,7 @@ export function mountLanding(host) {
           <a href="#/manche"><span class="lnm-label">Visualiseur de manche</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/accords"><span class="lnm-label">Roue d'accords</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/progressions"><span class="lnm-label">Progressions</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/backing"><span class="lnm-label">Backing tracks blues</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/triades"><span class="lnm-label">Triades d'accord</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/caged"><span class="lnm-label">Système CAGED</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/gammes"><span class="lnm-label">Gammes</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
@@ -409,7 +441,7 @@ export function mountLanding(host) {
     <section class="landing-section landing-modes">
       <header class="section-header">
         <h2>Visualise. Comprends. Construis. Joue.</h2>
-        <p class="section-sub">Dix outils complémentaires&nbsp;— mémorisez le manche, théorisez les progressions, construisez les voicings, explorez les gammes et arpèges, accordez votre guitare, entraînez-vous à l'oreille et suivez le tempo.</p>
+        <p class="section-sub">Onze outils complémentaires&nbsp;— mémorisez le manche, théorisez les progressions, construisez les voicings, explorez les gammes et arpèges, jouez sur des backing tracks blues, accordez votre guitare, entraînez-vous à l'oreille et suivez le tempo.</p>
       </header>
 
       <div class="bento-grid">
@@ -431,6 +463,17 @@ export function mountLanding(host) {
               <span class="bento-tag">Progressions · 8 presets</span>
               <h3>Progressions d'accords</h3>
               <p>Pop, blues 12 mesures, anatole, ii-V-I, doo-wop… Choisis ta progression, ta tonalité, ton tempo, et joue par-dessus en boucle.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+
+          <a class="bento-tile cta-backing" href="#/backing">
+            <span class="bento-badge">Nouveau</span>
+            <div class="bento-illu">${buildBackingIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Backing tracks · 5 grooves blues</span>
+              <h3>Backing tracks blues</h3>
+              <p>Shuffle, slow blues, minor blues, boogie, quick-change. Basse et guitare échantillonnées, batterie synthé, scheduler échantillon-précis. Joue ta gamme par-dessus.</p>
               <span class="bento-arrow" aria-hidden="true">→</span>
             </div>
           </a>

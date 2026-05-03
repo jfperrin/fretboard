@@ -26,7 +26,7 @@ function midiFromName(name) {
 }
 
 let ctx = null;
-function getCtx() {
+export function getAudioContext() {
   if (!ctx) {
     const Ctor = window.AudioContext || window.webkitAudioContext;
     ctx = new Ctor();
@@ -34,6 +34,7 @@ function getCtx() {
   if (ctx.state === 'suspended') ctx.resume();
   return ctx;
 }
+function getCtx() { return getAudioContext(); }
 
 const buffers = new Map(); // midi -> AudioBuffer
 let loadPromise = null;

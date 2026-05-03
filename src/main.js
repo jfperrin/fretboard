@@ -11,6 +11,7 @@ import { mountTuner } from './views/tuner.js';
 import { mountProgressions } from './views/progressions.js';
 import { mountCaged } from './views/caged.js';
 import { mountArpeges } from './views/arpeges.js';
+import { mountBacking } from './views/backing.js';
 import { preloadSamples } from './audio.js';
 import { isUnlocked, MAX_LEVEL } from './progression.js';
 
@@ -31,6 +32,7 @@ const ROUTES = {
   '#/arpeges':       (v) => mountArpeges(v),
   '#/caged':         (v) => mountCaged(v),
   '#/progressions':  (v) => mountProgressions(v),
+  '#/backing':       (v) => mountBacking(v),
   '#/metronome':     (v) => mountMetronome(v),
   '#/accordeur':     (v) => mountTuner(v),
   '#/game':          (v) => mountLevels(v),
@@ -55,6 +57,7 @@ function setActive(hash) {
                 : hash.startsWith('#/arpeges')      ? '#/arpeges'
                 : hash.startsWith('#/caged')        ? '#/caged'
                 : hash.startsWith('#/progressions') ? '#/progressions'
+                : hash.startsWith('#/backing')      ? '#/backing'
                 : hash.startsWith('#/metronome')    ? '#/metronome'
                 : hash.startsWith('#/accordeur')    ? '#/accordeur'
                 : null;
@@ -101,6 +104,8 @@ if (import.meta.hot) {
       './views/arpeges.js',
       './views/caged.js',
       './views/progressions.js',
+      './views/backing.js',
+      './backing.js',
       './views/metronome.js',
       './views/tuner.js',
       './fretboard.js',
