@@ -1,6 +1,5 @@
 import './style.css';
 import { mountLanding } from './views/landing.js';
-import { buildHeadstock } from './views/headstock.js';
 import { mountHome } from './views/home.js';
 import { mountGame } from './views/game.js';
 import { mountLevels } from './views/levels.js';
@@ -15,11 +14,7 @@ preloadSamples();
 
 const view = document.getElementById('view');
 const body = document.body;
-const topLinks = document.querySelectorAll('.topbar-links a');
-
-// Tête de guitare décorative à gauche du menu de la topbar.
-const topHeadstock = document.querySelector('.topbar-headstock');
-if (topHeadstock) topHeadstock.innerHTML = buildHeadstock();
+const topLinks = document.querySelectorAll('.topbar-menu a');
 
 const ROUTES = {
   '#/':         (v) => mountLanding(v),

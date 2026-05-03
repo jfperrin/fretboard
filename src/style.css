@@ -86,35 +86,25 @@ body.is-landing.topbar-revealed .topbar {
   background: rgba(10, 13, 18, 0.7);
   border-bottom-color: var(--border);
 }
-/* Sur les pages internes (manche, accords, jeu, triades) : on garde uniquement
-   le logo dans la topbar — le manche complet n'a plus d'utilité une fois la page ouverte. */
-body:not(.is-landing) .topbar-neck { display: none; }
+/* Sur les pages internes : pas de menu dans la topbar, juste le logo. */
+body:not(.is-landing) .topbar-menu { display: none; }
 
-/* Manche complet (tête + menu) — partagé entre topbar (compact) et landing. */
-.topbar-neck,
+/* Manche décoratif de la landing (tête + planche). */
 .landing-neck {
   display: inline-flex;
   align-items: center;
 }
-.topbar-neck { flex-shrink: 0; }
-.topbar-neck .topbar-links {
-  border-radius: 0 10px 10px 0;
-  border-left: none;
-  width: 562px;
-}
-.topbar-headstock,
 .headstock {
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
 }
-.topbar-headstock { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
-.headstock        { filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55)); }
-
-.headstock-svg,
-.topbar-headstock svg { display: block; width: auto; }
-.headstock-svg        { height: 162px; }
-.topbar-headstock svg { height: 164px; }
+.headstock-svg {
+  display: block;
+  width: auto;
+  height: 162px;
+}
 
 .topbar-logo {
   display: flex;
@@ -136,16 +126,44 @@ body:not(.is-landing) .topbar-neck { display: none; }
   box-shadow: 0 4px 14px rgba(86, 194, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
-/* ── Manche Les Paul : rosewood + blocs ivoire + fils de frette ── */
-/* 6 cordes en stack de gradients, alignées sur les points du sillet de la tête.
-   Offsets verticaux depuis le centre : ±33, ±19, ±5 px (= mêmes y que la tête,
-   centrée verticalement dans .landing-neck). Mi aigu (fin) en haut, Mi grave (épais) en bas. */
-.topbar-links,
-.landing-nav {
+/* Menu textuel de la topbar (landing scrollée). */
+.topbar-menu {
   display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.topbar-menu a {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--fg-dim);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  transition: color 200ms var(--ease), background 200ms var(--ease);
+}
+.topbar-menu a:hover {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.06);
+}
+.topbar-menu a.active {
+  color: var(--accent);
+  background: rgba(245, 177, 74, 0.12);
+}
+
+/* ── Manche décoratif (sans liens) : rosewood + cordes + inlays ── */
+/* 6 cordes en stack de gradients, alignées sur les points du sillet de la tête.
+   Offsets verticaux depuis le centre : ±33, ±19, ±5 px. */
+.landing-fretboard {
+  display: inline-flex;
   flex-shrink: 0;
   position: relative;
-  border-radius: 10px;
+  width: 562px;
+  height: 78px;
+  border-radius: 0 10px 10px 0;
   overflow: hidden;
   background:
     linear-gradient(to bottom, transparent calc(50% - 33.50px),  rgba(248, 240, 215, 0.85) calc(50% - 33.50px),  rgba(248, 240, 215, 0.85) calc(50% - 32.50px),  transparent calc(50% - 32.50px)),
@@ -156,62 +174,19 @@ body:not(.is-landing) .topbar-neck { display: none; }
     linear-gradient(to bottom, transparent calc(50% + 32.25px),  rgba(220, 210, 180, 0.55) calc(50% + 32.25px),  rgba(220, 210, 180, 0.55) calc(50% + 33.75px),  transparent calc(50% + 33.75px)),
     linear-gradient(180deg, #2e1a0c 0%, #1c0e05 40%, #251508 70%, #1a0d04 100%);
   border: 1px solid rgba(0, 0, 0, 0.5);
+  border-left: none;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Fils de frette entre chaque section */
-.topbar-links > * + *,
-.landing-nav > * + * {
+.landing-fretboard > * + * {
   border-left: 2px solid rgba(210, 190, 150, 0.30);
   box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.07);
 }
 
-/* Liens — texte façon "gravé dans le bois" (cream chaud + ombre interne sombre + halo ambré subtil) */
-.topbar-links a,
-.landing-nav a {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8px;
-  height: 78px;
-  width: 80px;
-  text-decoration: none;
-  color: rgba(246, 236, 214, 0.88);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.025em;
-  line-height: 1.4;
-  text-align: center;
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.75),
-    0 0 10px rgba(245, 177, 74, 0.18);
-  transition: color 200ms var(--ease), background 200ms var(--ease), text-shadow 200ms var(--ease);
-}
-.topbar-links a:hover,
-.landing-nav a:hover {
-  color: #faf0d4;
-  background: rgba(245, 177, 74, 0.05);
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.75),
-    0 0 14px rgba(245, 177, 74, 0.50);
-}
-.topbar-links a.active {
-  color: var(--fg);
-  background: rgba(245, 177, 74, 0.07);
-}
-/* Barre de capo bleue sur le bord gauche */
-.topbar-links a.active::after {
-  content: '';
-  position: absolute;
-  left: 0; top: 15%; bottom: 15%;
-  width: 3px;
-  background: rgba(86, 194, 255, 0.6);
-  border-radius: 0 2px 2px 0;
-  box-shadow: 0 0 8px rgba(86, 194, 255, 0.4);
+.landing-fretboard .fret-cell {
+  flex: 0 0 80px;
+  height: 100%;
 }
 
 /* Blocs inlay trapézoïdaux ivoire */
@@ -241,13 +216,6 @@ body:not(.is-landing) .topbar-neck { display: none; }
   filter: drop-shadow(0 1.5px 3px rgba(0, 0, 0, 0.55));
 }
 
-.landing-nav {
-  display: inline-flex;
-  width: 562px;
-  border-radius: 0 10px 10px 0;
-  border-left: none;
-}
-
 /* ── Tête de guitare (3+3) accolée à gauche du menu-manche ── */
 .landing-neck { margin-top: 8px; }
 .headstock .peg {
@@ -265,66 +233,59 @@ body:not(.is-landing) .topbar-neck { display: none; }
   100% { transform: rotate(0deg)   scale(1); }
 }
 
-/* Nav alternative ≤1024 px : un menu propre remplace le manche dans le hero.
-   Affichée uniquement sur cette plage ; cachée par défaut. */
-.landing-nav-mobile { display: none; }
+/* Menu textuel principal — toujours visible sous le manche. */
+.landing-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: min(100%, 520px);
+  margin-top: 16px;
+}
+.landing-menu a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  transition: transform 200ms var(--ease), background 200ms var(--ease),
+              border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.landing-menu a:hover,
+.landing-menu a:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(245, 177, 74, 0.45);
+  color: #fff;
+}
+.lnm-arrow {
+  color: var(--accent);
+  font-size: 1.05rem;
+  transition: transform 200ms var(--ease);
+}
+.landing-menu a:hover .lnm-arrow { transform: translateX(4px); }
 
 @media (max-width: 1024px) {
-  /* Plus de manche (ni dans le hero, ni dans la topbar scrollée) :
-     ça déborderait du contenu centré une fois le padding latéral retranché. */
-  .landing-neck,
-  .topbar-neck { display: none; }
-
-  .landing-nav-mobile {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    width: min(100%, 520px);
-    margin-top: 8px;
-  }
-  .landing-nav-mobile a {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 18px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--fg);
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    transition: transform 200ms var(--ease), background 200ms var(--ease),
-                border-color 200ms var(--ease), color 200ms var(--ease);
-  }
-  .landing-nav-mobile a:hover,
-  .landing-nav-mobile a:focus-visible {
-    outline: none;
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(245, 177, 74, 0.45);
-    color: #fff;
-  }
-  .lnm-arrow {
-    color: var(--accent);
-    font-size: 1.05rem;
-    transition: transform 200ms var(--ease);
-  }
-  .landing-nav-mobile a:hover .lnm-arrow { transform: translateX(4px); }
+  /* Le manche déborderait du contenu une fois le padding latéral retranché. */
+  .landing-neck { display: none; }
 }
 
 @media (max-width: 520px) {
-  .landing-nav-mobile { grid-template-columns: 1fr; }
+  .landing-menu { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
   .topbar { padding: 8px 16px; }
-  .topbar-links a, .landing-nav a { width: 72px; height: 70px; font-size: 0.65rem; }
-  .neck-inlay { flex: 0 0 72px; }
-  .neck-inlay::before { width: 14px; height: 14px; }
+  .topbar-menu a { padding: 6px 10px; font-size: 0.85rem; }
 }
 
 .card {

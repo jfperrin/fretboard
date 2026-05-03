@@ -169,19 +169,19 @@ export function mountLanding(host) {
           Mémorise le manche, construis tes accords, joue à l'oreille.<br>
           Quatre outils interactifs en notation française&nbsp;— tout dans ton navigateur, sans installation.
         </p>
-        <div class="landing-neck">
+        <div class="landing-neck" aria-hidden="true">
           <div class="headstock">${buildHeadstock()}</div>
-          <nav class="landing-nav" aria-label="Navigation rapide">
-            <a href="#/manche">Visualiseur<br>de manche</a>
-            <a href="#/accords">Roue<br>d'accords</a>
-            <span class="neck-inlay" aria-hidden="true"></span>
-            <a href="#/game">Jeu<br>d'oreille</a>
-            <span class="neck-inlay" aria-hidden="true"></span>
-            <a href="#/triades">Triades<br>d'accord</a>
-            <span class="neck-inlay" aria-hidden="true"></span>
-          </nav>
+          <div class="landing-fretboard">
+            <span class="fret-cell"></span>
+            <span class="neck-inlay"></span>
+            <span class="fret-cell"></span>
+            <span class="neck-inlay"></span>
+            <span class="fret-cell"></span>
+            <span class="neck-inlay"></span>
+            <span class="fret-cell"></span>
+          </div>
         </div>
-        <nav class="landing-nav-mobile" aria-label="Navigation rapide">
+        <nav class="landing-menu" aria-label="Navigation rapide">
           <a href="#/manche"><span class="lnm-label">Visualiseur de manche</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/accords"><span class="lnm-label">Roue d'accords</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/game"><span class="lnm-label">Jeu d'oreille</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
