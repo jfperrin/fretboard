@@ -5,6 +5,7 @@ import { mountGame } from './views/game.js';
 import { mountLevels } from './views/levels.js';
 import { mountChords } from './views/chords.js';
 import { mountTriads } from './views/triads.js';
+import { mountMetronome } from './views/metronome.js';
 import { preloadSamples } from './audio.js';
 import { isUnlocked, MAX_LEVEL } from './progression.js';
 
@@ -17,11 +18,12 @@ const body = document.body;
 const topLinks = document.querySelectorAll('.topbar-menu a');
 
 const ROUTES = {
-  '#/':         (v) => mountLanding(v),
-  '#/manche':   (v) => mountHome(v),
-  '#/accords':  (v) => mountChords(v),
-  '#/triades':  (v) => mountTriads(v),
-  '#/game':     (v) => mountLevels(v),
+  '#/':           (v) => mountLanding(v),
+  '#/manche':     (v) => mountHome(v),
+  '#/accords':    (v) => mountChords(v),
+  '#/triades':    (v) => mountTriads(v),
+  '#/metronome':  (v) => mountMetronome(v),
+  '#/game':       (v) => mountLevels(v),
 };
 
 let cleanup = null;
@@ -35,10 +37,11 @@ function parseGameLevel(hash) {
 }
 
 function setActive(hash) {
-  const navHash = hash.startsWith('#/game')    ? '#/game'
-                : hash.startsWith('#/manche')  ? '#/manche'
-                : hash.startsWith('#/accords') ? '#/accords'
-                : hash.startsWith('#/triades') ? '#/triades'
+  const navHash = hash.startsWith('#/game')      ? '#/game'
+                : hash.startsWith('#/manche')    ? '#/manche'
+                : hash.startsWith('#/accords')   ? '#/accords'
+                : hash.startsWith('#/triades')   ? '#/triades'
+                : hash.startsWith('#/metronome') ? '#/metronome'
                 : null;
   topLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === navHash));
   body.classList.toggle('is-landing', hash === '#/' || hash === '');
@@ -79,6 +82,7 @@ if (import.meta.hot) {
       './views/levels.js',
       './views/chords.js',
       './views/triads.js',
+      './views/metronome.js',
       './fretboard.js',
       './notes.js',
       './audio.js',

@@ -1,0 +1,14 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "unit-allowed-list": ["px", "rem", "em", "vh", "vw", "deg", "s", "ms", "%", "fr", "ch"],
+    "property-no-unknown": null,
+    "selector-pseudo-element-no-unknown": null,
+    "function-no-unknown": null,
+    "declaration-no-important": null,
+    "no-descending-specificity": null,
+    "no-duplicate-selectors": null,
+    "declaration-block-single-line-max-declarations": null,
+    "selector-class-pattern": null
+  }
+}

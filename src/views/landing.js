@@ -127,6 +127,35 @@ function buildFeaturedWheelIllu() {
   `;
 }
 
+function buildMetronomeIllu() {
+  return `
+    <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="metro-body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a2917"/>
+          <stop offset="1" stop-color="#1d130a"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="140" cy="100" rx="70" ry="3" fill="rgba(0,0,0,0.45)" />
+      <path d="M 100 95 L 80 18 L 200 18 L 180 95 Z"
+            fill="url(#metro-body)"
+            stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+      <path d="M 110 85 L 96 30 L 184 30 L 170 85 Z"
+            fill="rgba(0,0,0,0.42)" />
+      <line x1="125" y1="50" x2="155" y2="50" stroke="rgba(245,177,74,0.32)" stroke-width="0.8" />
+      <line x1="120" y1="62" x2="160" y2="62" stroke="rgba(245,177,74,0.22)" stroke-width="0.8" />
+      <line x1="115" y1="74" x2="165" y2="74" stroke="rgba(245,177,74,0.16)" stroke-width="0.8" />
+      <g transform="rotate(-12 140 88)">
+        <line x1="140" y1="88" x2="140" y2="22"
+              stroke="var(--accent-2)" stroke-width="1.6" stroke-linecap="round" />
+        <rect x="132" y="46" width="16" height="8" rx="1.2"
+              fill="var(--accent)" stroke="rgba(0,0,0,0.5)" stroke-width="0.6" />
+        <circle cx="140" cy="22" r="3.5" fill="rgba(255,255,255,0.55)" />
+      </g>
+    </svg>
+  `;
+}
+
 function buildEarIllu() {
   return `
     <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -184,8 +213,9 @@ export function mountLanding(host) {
         <nav class="landing-menu" aria-label="Navigation rapide">
           <a href="#/manche"><span class="lnm-label">Visualiseur de manche</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/accords"><span class="lnm-label">Roue d'accords</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
-          <a href="#/game"><span class="lnm-label">Jeu d'oreille</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/triades"><span class="lnm-label">Triades d'accord</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/game"><span class="lnm-label">Jeu d'oreille</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/metronome"><span class="lnm-label">Métronome</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
         </nav>
         <div class="landing-scroll-hint" aria-hidden="true">
           <span>Découvrir</span>
@@ -242,6 +272,16 @@ export function mountLanding(host) {
             <span class="bento-tag">Entraînement · 10 niveaux</span>
             <h3>Jeu d'oreille</h3>
             <p>Reconnais une note jouée et reproduis-la au micro. Progression des 7 naturelles vers les 12 demi-tons, avec détection de hauteur en temps réel.</p>
+            <span class="bento-arrow" aria-hidden="true">→</span>
+          </div>
+        </a>
+
+        <a class="bento-tile cta-metronome" href="#/metronome">
+          <div class="bento-illu">${buildMetronomeIllu()}</div>
+          <div class="bento-body">
+            <span class="bento-tag">Tempo · 30 → 280 BPM</span>
+            <h3>Métronome</h3>
+            <p>Quatre timbres de clic, mesures de 2 à 6 temps, ajustement à la molette ou au bouton près. Synthèse Web Audio, timing échantillon-précis.</p>
             <span class="bento-arrow" aria-hidden="true">→</span>
           </div>
         </a>
