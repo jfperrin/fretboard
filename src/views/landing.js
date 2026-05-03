@@ -127,6 +127,41 @@ function buildFeaturedWheelIllu() {
   `;
 }
 
+function buildScalesIllu() {
+  // Pentatonique mineure de La, pattern position 1 sur 5 frettes.
+  const xs = fretXs(5, MINI.padX, MINI.w);
+  const ys = stringYs(6, MINI.stringTop, MINI.stringSpan);
+  // s : 0 = Mi grave (en haut visuel inversé : 0 = aigu dans MINI), f en frettes 1..5
+  const positions = [
+    { s: 5, f: 1, root: true  }, // La (Mi grave fret 5 → ici fret 1 du mini)
+    { s: 5, f: 3, root: false },
+    { s: 4, f: 1, root: false },
+    { s: 4, f: 3, root: false },
+    { s: 3, f: 1, root: true  },
+    { s: 3, f: 3, root: false },
+    { s: 2, f: 2, root: false },
+    { s: 2, f: 3, root: false },
+    { s: 1, f: 1, root: false },
+    { s: 1, f: 3, root: false },
+    { s: 0, f: 1, root: true  },
+    { s: 0, f: 3, root: false },
+  ];
+  const markers = positions.map(({ s, f, root }) => {
+    const cx = (xs[f - 1] + xs[f]) / 2;
+    const cy = ys[s];
+    return root
+      ? `<circle cx="${cx}" cy="${cy}" r="6" fill="var(--accent)" stroke="rgba(0,0,0,0.45)" stroke-width="0.6" />`
+      : `<circle cx="${cx}" cy="${cy}" r="5" fill="rgba(232,236,243,0.85)" stroke="rgba(0,0,0,0.35)" stroke-width="0.5" />`;
+  }).join('');
+  return renderMiniFretboard({
+    ...MINI, frets: 5,
+    background: { id: 'scaleWood', ...WOOD },
+    inlays: { single: [3, 5] },
+    inlayRadius: 3.4,
+    markers,
+  });
+}
+
 function buildMetronomeIllu() {
   return `
     <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -214,6 +249,7 @@ export function mountLanding(host) {
           <a href="#/manche"><span class="lnm-label">Visualiseur de manche</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/accords"><span class="lnm-label">Roue d'accords</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/triades"><span class="lnm-label">Triades d'accord</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/gammes"><span class="lnm-label">Gammes</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/game"><span class="lnm-label">Jeu d'oreille</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/metronome"><span class="lnm-label">Métronome</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
         </nav>
@@ -232,16 +268,12 @@ export function mountLanding(host) {
       </header>
 
       <div class="bento-grid">
-        <a class="bento-tile bento-feature cta-accords" href="#/accords">
-          <span class="bento-badge">Nouveau</span>
-          <div class="bento-illu bento-illu-feature">${buildFeaturedWheelIllu()}</div>
+        <a class="bento-tile cta-accords" href="#/accords">
+          <div class="bento-illu">${buildFeaturedWheelIllu()}</div>
           <div class="bento-body">
             <span class="bento-tag">Harmonie · Cycle des quintes</span>
             <h3>Roue d'accords</h3>
-            <p>
-              Aligne ta tonalité sous le masque ambré et lis directement les sept degrés diatoniques&nbsp;:
-              I, ii, iii, IV, V, vi, vii°. Tourne au drag, à la molette, ou clique pour entendre la triade.
-            </p>
+            <p>Aligne ta tonalité sous le masque ambré et lis directement les sept degrés diatoniques&nbsp;: I, ii, iii, IV, V, vi, vii°. Tourne au drag, à la molette, ou clique pour entendre la triade.</p>
             <span class="bento-arrow" aria-hidden="true">→</span>
           </div>
         </a>
@@ -262,6 +294,17 @@ export function mountLanding(host) {
             <span class="bento-tag">Voicings · 3 cordes</span>
             <h3>Triades d'accord</h3>
             <p>Toutes les positions des accords majeur, mineur et diminué sur chaque groupe de 3 cordes adjacentes. Repère root, tierce et quinte d'un coup d'œil.</p>
+            <span class="bento-arrow" aria-hidden="true">→</span>
+          </div>
+        </a>
+
+        <a class="bento-tile cta-gammes" href="#/gammes">
+          <span class="bento-badge">Nouveau</span>
+          <div class="bento-illu">${buildScalesIllu()}</div>
+          <div class="bento-body">
+            <span class="bento-tag">Gammes · 8 modes</span>
+            <h3>Gammes</h3>
+            <p>Penta mineure, blues, modes diatoniques, mineure harmonique. Visualise toutes les positions et écoute la gamme jouée en boucle au tempo choisi.</p>
             <span class="bento-arrow" aria-hidden="true">→</span>
           </div>
         </a>

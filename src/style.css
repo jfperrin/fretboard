@@ -1084,8 +1084,8 @@ body:not(.is-landing) .topbar-menu { display: none; }
   font-size: 1.02rem;
 }
 
-/* Bento : 5 tuiles. Colonne gauche = harmonie (Roue feature × 2 lignes + Triades).
-   Colonne droite = pratique (Visualiseur, Jeu, Métronome). */
+/* Bento : 6 tuiles, grille 3×2 uniforme.
+   Gauche = harmonie (Roue, Triades, Gammes). Droite = pratique (Visualiseur, Jeu, Métronome). */
 
 .bento-grid {
   display: grid;
@@ -1093,8 +1093,9 @@ body:not(.is-landing) .topbar-menu { display: none; }
   grid-template-rows: 1fr 1fr 1fr;
   gap: 18px;
 }
-.bento-grid .cta-accords    { grid-column: 1; grid-row: 1 / span 2; }
-.bento-grid .cta-triades    { grid-column: 1; grid-row: 3; }
+.bento-grid .cta-accords    { grid-column: 1; grid-row: 1; }
+.bento-grid .cta-triades    { grid-column: 1; grid-row: 2; }
+.bento-grid .cta-gammes     { grid-column: 1; grid-row: 3; }
 .bento-grid .cta-visualiser { grid-column: 2; grid-row: 1; }
 .bento-grid .cta-jeu        { grid-column: 2; grid-row: 2; }
 .bento-grid .cta-metronome  { grid-column: 2; grid-row: 3; }
@@ -1226,6 +1227,11 @@ body:not(.is-landing) .topbar-menu { display: none; }
 .cta-accords .bento-tag    { color: var(--accent);   border-color: rgb(245 177 74 / 35%); }
 .cta-triades .bento-tag    { color: var(--accent);   border-color: rgb(245 177 74 / 30%); }
 .cta-metronome .bento-tag  { color: var(--accent-2); border-color: rgb(86 194 255 / 30%); }
+.cta-gammes .bento-tag     { color: var(--accent);   border-color: rgb(245 177 74 / 30%); }
+
+.cta-gammes.bento-tile::before {
+  background: radial-gradient(60% 60% at 50% 0%, rgb(245 177 74 / 18%), transparent 70%);
+}
 
 .cta-triades.bento-tile::before {
   background: radial-gradient(60% 60% at 50% 0%, rgb(245 177 74 / 16%), transparent 70%);
@@ -1967,4 +1973,219 @@ body:not(.is-landing) .topbar-menu { display: none; }
   .bpm-step { padding: 8px 10px; min-width: 46px; font-size: 0.88rem; }
   .metronome-toggle { padding: 12px 20px; min-width: 120px; font-size: 0.95rem; }
   .metronome-option-label { min-width: 100%; margin-bottom: 2px; }
+}
+
+/* ---------- Gammes ---------- */
+
+.scales-view {
+  padding: 32px clamp(16px, 4vw, 48px);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.scales-title {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0 0 4px;
+}
+
+.scales-subtitle {
+  color: var(--fg-dim);
+  font-size: 0.95rem;
+  margin: 0 0 28px;
+  max-width: 60ch;
+}
+
+.scales-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.scales-control-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.scales-control-label {
+  color: var(--fg-dim);
+  font-size: 0.85rem;
+  min-width: 60px;
+}
+
+.scales-types,
+.scales-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.scales-board-container {
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.scales-board-container .fretboard-svg {
+  min-width: 900px;
+}
+
+/* Player */
+.scales-player {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 14px 18px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 3%);
+}
+
+.scales-toggle {
+  appearance: none;
+  border: none;
+  background: var(--accent-grad);
+  color: var(--accent-fg);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 12px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 170px;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgb(245 177 74 / 30%);
+  transition: transform 200ms var(--ease), box-shadow 200ms var(--ease),
+              background 200ms var(--ease), color 200ms var(--ease);
+}
+
+.scales-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgb(245 177 74 / 40%);
+}
+
+.scales-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(245 177 74 / 40%);
+}
+
+.scales-toggle.is-playing {
+  background: rgb(255 255 255 / 6%);
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%);
+}
+
+.scales-bpm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scales-bpm-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 96px;
+  justify-content: center;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 2%);
+}
+
+.scales-bpm-value > span:first-child {
+  font-family: var(--font-mono), monospace;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--accent);
+}
+
+.scales-bpm-unit {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+.scales-slider {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 22px;
+}
+
+.scales-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: rgb(255 255 255 / 8%);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.scales-slider::-moz-range-track {
+  height: 6px;
+  background: rgb(255 255 255 / 8%);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.scales-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid rgb(10 13 18 / 60%);
+  box-shadow: 0 4px 12px rgb(245 177 74 / 45%);
+  cursor: grab;
+}
+
+.scales-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid rgb(10 13 18 / 60%);
+  box-shadow: 0 4px 12px rgb(245 177 74 / 45%);
+  cursor: grab;
+}
+
+.scales-now {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85rem;
+  color: var(--fg-dim);
+  text-align: center;
+  padding-top: 4px;
+  border-top: 1px dashed rgb(255 255 255 / 6%);
+}
+
+@media (width <= 640px) {
+  .scales-player {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .scales-toggle { width: 100%; }
+}
+
+/* Playhead du player de gammes */
+.playhead-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: playhead-pulse 600ms var(--ease) infinite;
+}
+
+@keyframes playhead-pulse {
+  0%   { opacity: 0.9; transform: scale(1);    }
+  60%  { opacity: 0.4; transform: scale(1.18); }
+  100% { opacity: 0.9; transform: scale(1);    }
 }

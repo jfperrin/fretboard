@@ -155,6 +155,10 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
   const feedbackLayer = el('g', { class: 'feedback-layer' });
   svg.appendChild(feedbackLayer);
 
+  // Playhead du player (gammes) — anneau pulsant sur la position en cours
+  const playheadLayer = el('g', { class: 'playhead-layer' });
+  svg.appendChild(playheadLayer);
+
   function positionXY(localIdx, f) {
     const cx = f === 0 ? padLeft - 24 : (fretX(f - 1) + fretX(f)) / 2;
     const cy = stringY(localIdx);
@@ -251,6 +255,51 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
     },
     clearMarkers() {
       markersLayer.innerHTML = '';
+    },
+    highlightScale({ root, intervals }) {
+      markersLayer.innerHTML = '';
+      playheadLayer.innerHTML = '';
+      const noteSet = new Set(intervals.map(iv => ((root + iv) % 12 + 12) % 12));
+      for (let local = 0; local < stringCount; local++) {
+        const s = stringIndices[local];
+        for (let f = 0; f <= frets; f++) {
+          const n = noteAtFret(s, f);
+          if (!noteSet.has(n.noteIndex)) continue;
+          const isRoot = n.noteIndex === ((root % 12) + 12) % 12;
+          const { cx, cy } = positionXY(local, f);
+          const g = el('g', { class: 'marker', transform: `translate(${cx} ${cy})` });
+          g.appendChild(el('circle', {
+            r: isRoot ? 14 : 12,
+            fill: isRoot ? '#f5b14a' : 'rgba(224,224,224,0.85)',
+            stroke: isRoot ? '#c07010' : 'rgba(120,120,120,0.6)',
+            'stroke-width': 1.5,
+            filter: 'url(#softShadow)',
+          }));
+          const txt = el('text', {
+            'text-anchor': 'middle', y: 4,
+            'font-family': 'JetBrains Mono, monospace',
+            'font-size': 10, 'font-weight': 700,
+            fill: isRoot ? '#1a0f00' : '#1a1a1a',
+          });
+          txt.textContent = noteLabel(n.noteIndex);
+          g.appendChild(txt);
+          markersLayer.appendChild(g);
+        }
+      }
+    },
+    setPlayhead(pos) {
+      playheadLayer.innerHTML = '';
+      if (!pos) return;
+      const localIdx = stringIndices.indexOf(pos.stringIdx);
+      if (localIdx === -1) return;
+      const { cx, cy } = positionXY(localIdx, pos.fret);
+      playheadLayer.appendChild(el('circle', {
+        cx, cy, r: 18,
+        fill: 'none',
+        stroke: '#56c2ff',
+        'stroke-width': 3,
+        class: 'playhead-ring',
+      }));
     },
     highlightTriads(voicings) {
       markersLayer.innerHTML = '';
