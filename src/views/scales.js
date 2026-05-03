@@ -7,79 +7,7 @@ const FRETS = 15;
 const MIN_BPM = 40;
 const MAX_BPM = 240;
 
-const PATTERNS = [
-  { id: 'asc-2nds', label: 'Secondes',         hint: '1-2, 2-3, 3-4…'   },
-  { id: 'pairs',    label: 'Pairs',            hint: '1-2, 3-4, 5-6…'   },
-  { id: 'broken',   label: 'Tierces brisées',  hint: '1-2, 1-3, 2-4…'   },
-  { id: 'snake',    label: 'Snake',            hint: 'Par cordes ↑↓'    },
-];
 
-const VISUALS = [
-  { id: 'none',    label: 'Aucun'  },
-  { id: 'group',   label: 'Groupes' },
-  { id: 'preview', label: 'Aperçu 4' },
-];
-
-// Liste de positions (1 par hauteur unique, sur la corde la plus grave possible),
-// triées par MIDI ascendant.
-function buildBasePositions(root, intervals) {
-  const noteSet = new Set(intervals.map(iv => ((root + iv) % 12 + 12) % 12));
-  const all = [];
-  for (let s = 0; s < 6; s++) {
-    for (let f = 0; f <= FRETS; f++) {
-      const n = noteAtFret(s, f);
-      if (!noteSet.has(n.noteIndex)) continue;
-      all.push({ stringIdx: s, fret: f, midi: midiOf(n) });
-    }
-  }
-  all.sort((a, b) => a.midi - b.midi || a.stringIdx - b.stringIdx);
-  const seen = new Set();
-  return all.filter(p => {
-    if (seen.has(p.midi)) return false;
-    seen.add(p.midi);
-    return true;
-  });
-}
-
-// Pattern A — sequencing en secondes : (n0,n1)(n1,n2)… ascendant + miroir descendant.
-function ascSecondsSequence(positions) {
-  const seq = [];
-  for (let i = 0; i < positions.length - 1; i++) {
-    seq.push(positions[i], positions[i + 1]);
-  }
-  for (let i = positions.length - 1; i > 0; i--) {
-    seq.push(positions[i], positions[i - 1]);
-  }
-  return seq;
-}
-
-// Pattern B — pairs disjointes ascendant puis descendant.
-function disjointPairsSequence(positions) {
-  const seq = [];
-  for (let i = 0; i + 1 < positions.length; i += 2) {
-    seq.push(positions[i], positions[i + 1]);
-  }
-  for (let i = positions.length - 1; i - 1 >= 0; i -= 2) {
-    seq.push(positions[i], positions[i - 1]);
-  }
-  return seq;
-}
-
-// Pattern C — tierces brisées : 1-2, puis (n-2,n) glissant ascendant + miroir.
-function brokenThirdsSequence(positions) {
-  const seq = [];
-  if (positions.length >= 2) seq.push(positions[0], positions[1]);
-  for (let i = 2; i < positions.length; i++) {
-    seq.push(positions[i - 2], positions[i]);
-  }
-  if (positions.length >= 2) {
-    seq.push(positions[positions.length - 1], positions[positions.length - 2]);
-  }
-  for (let i = positions.length - 3; i >= 0; i--) {
-    seq.push(positions[i + 2], positions[i]);
-  }
-  return seq;
-}
 
 // Pattern D — snake : sur chaque corde 2 notes ascendantes, traversée 6→1 puis 1→6,
 // en avançant de 2 notes par corde à chaque passe, jusqu'à épuisement.
@@ -114,13 +42,8 @@ function snakeSequence(root, intervals) {
   return seq;
 }
 
-function buildSequence(pattern, root, intervals) {
-  if (pattern === 'snake') return snakeSequence(root, intervals);
-  const base = buildBasePositions(root, intervals);
-  if (pattern === 'asc-2nds') return ascSecondsSequence(base);
-  if (pattern === 'pairs')    return disjointPairsSequence(base);
-  if (pattern === 'broken')   return brokenThirdsSequence(base);
-  return base;
+function buildSequence(root, intervals) {
+  return snakeSequence(root, intervals);
 }
 
 function setActive(container, btn) {
@@ -132,7 +55,7 @@ export function mountScales(host) {
   host.innerHTML = `
     <div class="scales-view">
       <h2 class="scales-title">Gammes</h2>
-      <p class="scales-subtitle">Visualise une gamme sur le manche, écoute-la en boucle au tempo et dans le motif de ton choix.</p>
+      <p class="scales-subtitle">Visualise une gamme sur le manche, écoute-la en boucle au tempo.</p>
 
       <div class="scales-controls">
         <div class="scales-control-row">
@@ -142,14 +65,6 @@ export function mountScales(host) {
         <div class="scales-control-row">
           <span class="scales-control-label">Tonique</span>
           <div class="note-buttons scales-notes" role="radiogroup" aria-label="Tonique"></div>
-        </div>
-        <div class="scales-control-row">
-          <span class="scales-control-label">Motif</span>
-          <div class="scales-patterns chip-row" role="radiogroup" aria-label="Motif"></div>
-        </div>
-        <div class="scales-control-row">
-          <span class="scales-control-label">Visuel</span>
-          <div class="scales-visuals chip-row" role="radiogroup" aria-label="Mode visuel"></div>
         </div>
       </div>
 
@@ -177,16 +92,12 @@ export function mountScales(host) {
   const state = {
     root: 9,
     scale: 'penta-min',
-    pattern: 'snake',
-    visual: 'group',
     bpm: 120,
     playing: false,
   };
 
   const elTypes    = host.querySelector('.scales-types');
   const elNotes    = host.querySelector('.scales-notes');
-  const elPatterns = host.querySelector('.scales-patterns');
-  const elVisuals  = host.querySelector('.scales-visuals');
   const elBoard    = host.querySelector('.scales-board-container');
   const elToggle   = host.querySelector('[data-toggle]');
   const elToggleLabel = elToggle.querySelector('.scales-toggle-label');
@@ -231,21 +142,6 @@ export function mountScales(host) {
     render();
   });
 
-  buildChips(elPatterns, PATTERNS, state.pattern, (item, btn) => {
-    state.pattern = item.id;
-    setActive(elPatterns, btn);
-    stopPlayer();
-  });
-
-  buildChips(elVisuals, VISUALS, state.visual, (item, btn) => {
-    state.visual = item.id;
-    setActive(elVisuals, btn);
-    if (!state.playing) {
-      board.setGroupOutline(null);
-      board.setUpcomingHighlight(null);
-    }
-  });
-
   const board = createFretboard(elBoard, { frets: FRETS });
   board.onPositionClick(({ frequency }) => playNote(frequency));
 
@@ -268,32 +164,14 @@ export function mountScales(host) {
 
   function applyVisuals() {
     if (!state.playing || sequence.length === 0) return;
-    if (state.visual === 'group') {
-      const groupStart = Math.floor(cursor / 2) * 2;
-      const group = [sequence[groupStart], sequence[groupStart + 1]].filter(Boolean);
-      board.setGroupOutline(group);
-      board.setUpcomingHighlight(null);
-    } else if (state.visual === 'preview') {
-      const next = [];
-      const seen = new Set();
-      for (let i = 1; i <= 4; i++) {
-        const p = sequence[(cursor + i) % sequence.length];
-        const key = `${p.stringIdx},${p.fret}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        next.push(p);
-      }
-      board.setUpcomingHighlight(next);
-      board.setGroupOutline(null);
-    } else {
-      board.setGroupOutline(null);
-      board.setUpcomingHighlight(null);
-    }
+    const groupStart = Math.floor(cursor / 2) * 2;
+    const group = [sequence[groupStart], sequence[groupStart + 1]].filter(Boolean);
+    board.setGroupOutline(group);
   }
 
   function startPlayer() {
     if (state.playing) return;
-    sequence = buildSequence(state.pattern, state.root, SCALE_INTERVALS[state.scale]);
+    sequence = buildSequence(state.root, SCALE_INTERVALS[state.scale]);
     if (sequence.length === 0) return;
     state.playing = true;
     cursor = 0;
@@ -323,7 +201,6 @@ export function mountScales(host) {
     cursor = 0;
     board.setPlayhead(null);
     board.setGroupOutline(null);
-    board.setUpcomingHighlight(null);
     elToggle.setAttribute('aria-pressed', 'false');
     elToggle.classList.remove('is-playing');
     elToggleLabel.textContent = 'Jouer la gamme';
