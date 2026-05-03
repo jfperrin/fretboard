@@ -2189,3 +2189,26 @@ body:not(.is-landing) .topbar-menu { display: none; }
   60%  { opacity: 0.4; transform: scale(1.18); }
   100% { opacity: 0.9; transform: scale(1);    }
 }
+
+/* Mode "Groupes" — rectangle pointillé ambré "marching ants" autour de la paire en cours */
+.group-outline {
+  filter: drop-shadow(0 0 4px rgb(245 177 74 / 50%));
+  animation: group-march 0.9s linear infinite;
+}
+
+@keyframes group-march {
+  from { stroke-dashoffset: 0;  }
+  to   { stroke-dashoffset: 20; }
+}
+
+/* Mode "Aperçu" — anneaux ambrés sur les 4 prochaines notes */
+.preview-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: preview-fade 240ms var(--ease) both;
+}
+
+@keyframes preview-fade {
+  from { transform: scale(0.7); }
+  to   { transform: scale(1);   }
+}

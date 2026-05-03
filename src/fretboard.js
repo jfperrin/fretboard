@@ -155,8 +155,15 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
   const feedbackLayer = el('g', { class: 'feedback-layer' });
   svg.appendChild(feedbackLayer);
 
-  // Playhead du player (gammes) — anneau pulsant sur la position en cours
+  // Player de gammes : 3 couches superposées
+  // - groupLayer : rectangle entourant le groupe (paire) en cours
+  // - previewLayer : anneaux statiques sur les 4 prochaines notes (mode aperçu)
+  // - playheadLayer : anneau pulsant sur la position jouée à l'instant
+  const groupLayer    = el('g', { class: 'group-layer' });
+  const previewLayer  = el('g', { class: 'preview-layer' });
   const playheadLayer = el('g', { class: 'playhead-layer' });
+  svg.appendChild(groupLayer);
+  svg.appendChild(previewLayer);
   svg.appendChild(playheadLayer);
 
   function positionXY(localIdx, f) {
@@ -259,6 +266,8 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
     highlightScale({ root, intervals }) {
       markersLayer.innerHTML = '';
       playheadLayer.innerHTML = '';
+      groupLayer.innerHTML = '';
+      previewLayer.innerHTML = '';
       const noteSet = new Set(intervals.map(iv => ((root + iv) % 12 + 12) % 12));
       for (let local = 0; local < stringCount; local++) {
         const s = stringIndices[local];
@@ -300,6 +309,53 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
         'stroke-width': 3,
         class: 'playhead-ring',
       }));
+    },
+    setGroupOutline(positions) {
+      groupLayer.innerHTML = '';
+      if (!positions || positions.length === 0) return;
+      const pts = positions.map(({ stringIdx, fret }) => {
+        const localIdx = stringIndices.indexOf(stringIdx);
+        return localIdx === -1 ? null : { ...positionXY(localIdx, fret), fret };
+      }).filter(Boolean);
+      if (pts.length === 0) return;
+      const fretGap = 8;
+      const minFret = Math.min(...pts.map(p => p.fret));
+      const maxFret = Math.max(...pts.map(p => p.fret));
+      const xLeft = minFret === 0
+        ? Math.min(...pts.map(p => p.cx)) - 18
+        : fretX(minFret - 1) + fretGap;
+      const xRight = fretX(maxFret) - fretGap;
+      const yPad = 22;
+      const yTop = Math.min(...pts.map(p => p.cy)) - yPad;
+      const yBottom = Math.max(...pts.map(p => p.cy)) + yPad;
+      groupLayer.appendChild(el('rect', {
+        x: xLeft, y: yTop,
+        width: xRight - xLeft,
+        height: yBottom - yTop,
+        rx: 10,
+        fill: 'none',
+        stroke: '#f5b14a',
+        'stroke-width': 2.5,
+        'stroke-dasharray': '6 4',
+        class: 'group-outline',
+      }));
+    },
+    setUpcomingHighlight(positions) {
+      previewLayer.innerHTML = '';
+      if (!positions || positions.length === 0) return;
+      positions.forEach(({ stringIdx, fret }, i) => {
+        const localIdx = stringIndices.indexOf(stringIdx);
+        if (localIdx === -1) return;
+        const { cx, cy } = positionXY(localIdx, fret);
+        previewLayer.appendChild(el('circle', {
+          cx, cy, r: 19,
+          fill: 'none',
+          stroke: '#f5b14a',
+          'stroke-width': 2,
+          opacity: Math.max(0.25, 0.85 - i * 0.18),
+          class: 'preview-ring',
+        }));
+      });
     },
     highlightTriads(voicings) {
       markersLayer.innerHTML = '';
