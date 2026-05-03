@@ -147,6 +147,10 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
     })).textContent = STRING_LABELS[tuningIdx];
   }
 
+  // Couche capodastre (sous les markers)
+  const capoLayer = el('g', { class: 'capo-layer' });
+  svg.appendChild(capoLayer);
+
   // Couche de markers (au-dessus)
   const markersLayer = el('g', { class: 'markers-layer' });
   svg.appendChild(markersLayer);
@@ -262,6 +266,32 @@ export function createFretboard(container, { frets = 15, stringIndices = [0, 1, 
     },
     clearMarkers() {
       markersLayer.innerHTML = '';
+    },
+    setCapo(fret) {
+      capoLayer.innerHTML = '';
+      if (!fret || fret < 1 || fret > frets) return;
+      const xCenter = (fretX(fret - 1) + fretX(fret)) / 2;
+      const yTop = padTop - 10;
+      const yBot = padTop + boardH + 10;
+      // Halo
+      capoLayer.appendChild(el('rect', {
+        x: xCenter - 9, y: yTop, width: 18, height: yBot - yTop,
+        rx: 5,
+        fill: 'rgba(245,177,74,0.18)',
+      }));
+      // Barre principale
+      capoLayer.appendChild(el('rect', {
+        x: xCenter - 4, y: yTop + 2, width: 8, height: yBot - yTop - 4,
+        rx: 3,
+        fill: '#1a1a1a',
+        stroke: '#f5b14a',
+        'stroke-width': 1.6,
+      }));
+      // Reflet
+      capoLayer.appendChild(el('rect', {
+        x: xCenter - 2.5, y: yTop + 4, width: 1.4, height: yBot - yTop - 8,
+        fill: 'rgba(245,177,74,0.55)',
+      }));
     },
     highlightScale({ root, intervals }) {
       markersLayer.innerHTML = '';

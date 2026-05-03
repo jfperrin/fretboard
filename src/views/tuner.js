@@ -1,6 +1,7 @@
 import { playNote } from '../audio.js';
 import { openMic } from '../pitch.js';
 import { midiOf, frequencyOf, noteLabel } from '../notes.js';
+import { loadPref, savePref } from '../storage.js';
 
 // Accordages : 6 cordes, de la plus grave (corde 6) à la plus aiguë (corde 1).
 // note = index 0..11 dans NOTES_FR ; octave = convention scientifique (Do central = C4).
@@ -111,8 +112,11 @@ export function mountTuner(host) {
   const elDetectedFreq = wrap.querySelector('[data-detected-freq]');
   const elReadout = wrap.querySelector('[data-readout]');
 
+  const savedId = loadPref('tuner.tuning', 'standard');
+  const initialTuning = TUNINGS.find((t) => t.id === savedId) || TUNINGS[0];
+
   const state = {
-    tuning: TUNINGS[0],
+    tuning: initialTuning,
     playingString: null,
     micActive: false,
   };
@@ -140,6 +144,7 @@ export function mountTuner(host) {
   function selectTuning(t) {
     if (t.id === state.tuning.id) return;
     state.tuning = t;
+    savePref('tuner.tuning', t.id);
     stopLoop();
     elTunings.querySelectorAll('.chip').forEach((c) => {
       const on = c.dataset.id === t.id;

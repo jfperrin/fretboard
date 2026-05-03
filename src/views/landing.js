@@ -225,6 +225,114 @@ function buildTunerIllu() {
   `;
 }
 
+function buildProgressionsIllu() {
+  // Quatre cartes d'accord enchaînées : I → V → vi → IV.
+  const W = 280, H = 110;
+  const chords = [
+    { lbl: 'I',  name: 'Do',  fill: 'hsl(0,58%,56%)'   },
+    { lbl: 'V',  name: 'Sol', fill: 'hsl(60,58%,56%)'  },
+    { lbl: 'vi', name: 'La m', fill: 'hsl(110,42%,38%)' },
+    { lbl: 'IV', name: 'Fa',  fill: 'hsl(330,58%,56%)' },
+  ];
+  const cardW = 50, cardH = 60, gap = 8;
+  const total = chords.length * cardW + (chords.length - 1) * gap;
+  const x0 = (W - total) / 2;
+  const y0 = (H - cardH) / 2;
+  let body = '';
+  chords.forEach((c, i) => {
+    const x = x0 + i * (cardW + gap);
+    body += `
+      <rect x="${x}" y="${y0}" width="${cardW}" height="${cardH}" rx="6"
+            fill="${c.fill}" stroke="rgba(0,0,0,0.4)" stroke-width="0.8"/>
+      <text x="${x + cardW / 2}" y="${y0 + 22}" text-anchor="middle"
+            font-family="JetBrains Mono, monospace" font-weight="700" font-size="13"
+            fill="rgba(10,13,18,0.9)">${c.lbl}</text>
+      <text x="${x + cardW / 2}" y="${y0 + 44}" text-anchor="middle"
+            font-family="Inter, sans-serif" font-weight="600" font-size="11"
+            fill="rgba(10,13,18,0.85)">${c.name}</text>
+    `;
+    if (i < chords.length - 1) {
+      const ax = x + cardW + gap / 2;
+      const ay = y0 + cardH / 2;
+      body += `<path d="M ${ax - 3} ${ay - 3} L ${ax + 3} ${ay} L ${ax - 3} ${ay + 3}"
+                     fill="none" stroke="var(--accent)" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+  });
+  return `
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${body}
+    </svg>
+  `;
+}
+
+function buildCagedIllu() {
+  // Cinq lettres en losange autour d'un point central, avec arc reliant.
+  const W = 280, H = 110;
+  const cx = W / 2, cy = H / 2;
+  const r = 38;
+  const letters = ['C', 'A', 'G', 'E', 'D'];
+  let body = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+                      stroke="rgba(245,177,74,0.35)" stroke-width="1.2"
+                      stroke-dasharray="3 3"/>`;
+  letters.forEach((L, i) => {
+    const ang = -Math.PI / 2 + (i * 2 * Math.PI) / letters.length;
+    const x = cx + r * Math.cos(ang);
+    const y = cy + r * Math.sin(ang);
+    body += `
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="14"
+              fill="var(--accent)" stroke="rgba(0,0,0,0.35)" stroke-width="0.8"/>
+      <text x="${x.toFixed(1)}" y="${(y + 1).toFixed(1)}" text-anchor="middle"
+            dominant-baseline="central"
+            font-family="JetBrains Mono, monospace" font-weight="700" font-size="14"
+            fill="rgba(10,13,18,0.92)">${L}</text>
+    `;
+  });
+  return `
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${body}
+    </svg>
+  `;
+}
+
+function buildArpegesIllu() {
+  // Notes d'un arpège (R-3-5-R) montant sur une portée stylisée.
+  const W = 280, H = 110;
+  const positions = [
+    { x: 30,  y: 78, lbl: 'R', accent: true  },
+    { x: 80,  y: 60, lbl: '3', accent: false },
+    { x: 130, y: 42, lbl: '5', accent: false },
+    { x: 180, y: 32, lbl: 'R', accent: true  },
+    { x: 230, y: 50, lbl: '3', accent: false },
+  ];
+  // Lignes horizontales façon portée
+  let body = '';
+  for (let i = 0; i < 5; i++) {
+    body += `<line x1="20" y1="${22 + i * 14}" x2="260" y2="${22 + i * 14}"
+                   stroke="rgba(255,255,255,0.06)" stroke-width="0.8"/>`;
+  }
+  // Courbe reliant les notes
+  const path = positions.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  body += `<path d="${path}" fill="none" stroke="var(--accent-2)" stroke-width="1.6"
+                 stroke-linecap="round" opacity="0.65"/>`;
+  // Notes
+  positions.forEach((p) => {
+    const fill = p.accent ? 'var(--accent)' : 'rgba(232,236,243,0.92)';
+    body += `
+      <circle cx="${p.x}" cy="${p.y}" r="9" fill="${fill}"
+              stroke="rgba(0,0,0,0.4)" stroke-width="0.7"/>
+      <text x="${p.x}" y="${p.y + 1}" text-anchor="middle" dominant-baseline="central"
+            font-family="JetBrains Mono, monospace" font-weight="700" font-size="9"
+            fill="rgba(10,13,18,0.9)">${p.lbl}</text>
+    `;
+  });
+  return `
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${body}
+    </svg>
+  `;
+}
+
 function buildEarIllu() {
   return `
     <svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -282,8 +390,11 @@ export function mountLanding(host) {
         <nav class="landing-menu" aria-label="Navigation rapide">
           <a href="#/manche"><span class="lnm-label">Visualiseur de manche</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/accords"><span class="lnm-label">Roue d'accords</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/progressions"><span class="lnm-label">Progressions</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/triades"><span class="lnm-label">Triades d'accord</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/caged"><span class="lnm-label">Système CAGED</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/gammes"><span class="lnm-label">Gammes</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
+          <a href="#/arpeges"><span class="lnm-label">Arpèges</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/accordeur"><span class="lnm-label">Accordeur</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/game"><span class="lnm-label">Jeu d'oreille</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
           <a href="#/metronome"><span class="lnm-label">Métronome</span><span class="lnm-arrow" aria-hidden="true">→</span></a>
@@ -298,7 +409,7 @@ export function mountLanding(host) {
     <section class="landing-section landing-modes">
       <header class="section-header">
         <h2>Visualise. Comprends. Construis. Joue.</h2>
-        <p class="section-sub">Sept outils complémentaires&nbsp;— mémorisez le manche, théorisez les progressions, construisez les voicings, explorez les gammes, accordez votre guitare, entraînez-vous à l'oreille et suivez le tempo.</p>
+        <p class="section-sub">Dix outils complémentaires&nbsp;— mémorisez le manche, théorisez les progressions, construisez les voicings, explorez les gammes et arpèges, accordez votre guitare, entraînez-vous à l'oreille et suivez le tempo.</p>
       </header>
 
       <div class="bento-grid">
@@ -313,6 +424,17 @@ export function mountLanding(host) {
         </a>
 
         <div class="bento-column">
+          <a class="bento-tile cta-progressions" href="#/progressions">
+            <span class="bento-badge">Nouveau</span>
+            <div class="bento-illu">${buildProgressionsIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Progressions · 8 presets</span>
+              <h3>Progressions d'accords</h3>
+              <p>Pop, blues 12 mesures, anatole, ii-V-I, doo-wop… Choisis ta progression, ta tonalité, ton tempo, et joue par-dessus en boucle.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+
           <a class="bento-tile cta-triades" href="#/triades">
             <div class="bento-illu">${buildTriadsIllu()}</div>
             <div class="bento-body">
@@ -323,19 +445,18 @@ export function mountLanding(host) {
             </div>
           </a>
 
-          <a class="bento-tile cta-gammes" href="#/gammes">
+          <a class="bento-tile cta-caged" href="#/caged">
             <span class="bento-badge">Nouveau</span>
-            <div class="bento-illu">${buildScalesIllu()}</div>
+            <div class="bento-illu">${buildCagedIllu()}</div>
             <div class="bento-body">
-              <span class="bento-tag">Gammes · 8 modes</span>
-              <h3>Gammes</h3>
-              <p>Penta mineure, blues, modes diatoniques, mineure harmonique. Visualise toutes les positions et écoute la gamme jouée en boucle au tempo choisi.</p>
+              <span class="bento-tag">Théorie · 5 formes mobiles</span>
+              <h3>Système CAGED</h3>
+              <p>Les cinq formes d'accord majeur — C, A, G, E, D — transposables sur tout le manche. Le squelette commun aux gammes et arpèges.</p>
               <span class="bento-arrow" aria-hidden="true">→</span>
             </div>
           </a>
 
           <a class="bento-tile cta-accordeur" href="#/accordeur">
-            <span class="bento-badge">Nouveau</span>
             <div class="bento-illu">${buildTunerIllu()}</div>
             <div class="bento-body">
               <span class="bento-tag">Accordage · 12 presets</span>
@@ -350,9 +471,30 @@ export function mountLanding(host) {
           <a class="bento-tile cta-visualiser" href="#/manche">
             <div class="bento-illu">${buildMiniFretboard()}</div>
             <div class="bento-body">
-              <span class="bento-tag">Exploration · 24 frettes</span>
+              <span class="bento-tag">Exploration · 24 frettes · capo</span>
               <h3>Visualiseur de manche</h3>
-              <p>Affiche toutes les positions d'une note sur le manche, jouées au sampler de guitare. Clique sur n'importe quel marker pour entendre la note exacte.</p>
+              <p>Affiche toutes les positions d'une note sur le manche, jouées au sampler de guitare. Capodastre intégré pour transposer visuellement.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+
+          <a class="bento-tile cta-gammes" href="#/gammes">
+            <div class="bento-illu">${buildScalesIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Gammes · 8 modes</span>
+              <h3>Gammes</h3>
+              <p>Penta mineure, blues, modes diatoniques, mineure harmonique. Visualise toutes les positions et écoute la gamme jouée en boucle au tempo choisi.</p>
+              <span class="bento-arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+
+          <a class="bento-tile cta-arpeges" href="#/arpeges">
+            <span class="bento-badge">Nouveau</span>
+            <div class="bento-illu">${buildArpegesIllu()}</div>
+            <div class="bento-body">
+              <span class="bento-tag">Arpèges · 8 qualités</span>
+              <h3>Arpèges</h3>
+              <p>Triades, septièmes, demi-diminués… Toutes les notes constitutives d'un accord, étalées sur le manche, montées et redescendues au tempo.</p>
               <span class="bento-arrow" aria-hidden="true">→</span>
             </div>
           </a>

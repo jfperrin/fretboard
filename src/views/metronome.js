@@ -3,6 +3,8 @@
 // désynchronise l'UI via requestAnimationFrame en consommant une file
 // d'événements horodatés.
 
+import { loadPref, savePref } from '../storage.js';
+
 const SIGNATURES = [
   { id: 2, label: '2/4' },
   { id: 3, label: '3/4' },
@@ -114,12 +116,17 @@ function playClick(ctx, type, t, accent) {
 }
 
 export function mountMetronome(host) {
+  const saved = loadPref('metronome', { bpm: 120, beats: 4, click: 'wood' });
   const state = {
-    bpm: 120,
-    beats: 4,
-    click: 'wood',
+    bpm: Math.max(MIN_BPM, Math.min(MAX_BPM, saved.bpm ?? 120)),
+    beats: SIGNATURES.some((s) => s.id === saved.beats) ? saved.beats : 4,
+    click: CLICK_TYPES.some((c) => c.id === saved.click) ? saved.click : 'wood',
     playing: false,
   };
+
+  function persist() {
+    savePref('metronome', { bpm: state.bpm, beats: state.beats, click: state.click });
+  }
 
   const wrap = document.createElement('section');
   wrap.className = 'metronome-view';
@@ -189,6 +196,7 @@ export function mountMetronome(host) {
     elDisplay.setAttribute('aria-valuenow', String(n));
     elTempo.textContent = tempoNameFor(n);
     if (Number(elSlider.value) !== n) elSlider.value = String(n);
+    persist();
   }
 
   function renderBeats() {
@@ -237,10 +245,12 @@ export function mountMetronome(host) {
     renderBeats();
     beatNum = 0;
     refreshChips(elSigs, (id) => Number(id) === state.beats);
+    persist();
   });
   buildChips(elClicks, CLICK_TYPES, (c) => c.id === state.click, (c) => {
     state.click = c.id;
     refreshChips(elClicks, (id) => id === state.click);
+    persist();
   });
   renderBeats();
 

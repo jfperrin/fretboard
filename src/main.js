@@ -8,6 +8,9 @@ import { mountTriads } from './views/triads.js';
 import { mountScales } from './views/scales.js';
 import { mountMetronome } from './views/metronome.js';
 import { mountTuner } from './views/tuner.js';
+import { mountProgressions } from './views/progressions.js';
+import { mountCaged } from './views/caged.js';
+import { mountArpeges } from './views/arpeges.js';
 import { preloadSamples } from './audio.js';
 import { isUnlocked, MAX_LEVEL } from './progression.js';
 
@@ -20,14 +23,17 @@ const body = document.body;
 const topLinks = document.querySelectorAll('.topbar-menu a');
 
 const ROUTES = {
-  '#/':           (v) => mountLanding(v),
-  '#/manche':     (v) => mountHome(v),
-  '#/accords':    (v) => mountChords(v),
-  '#/triades':    (v) => mountTriads(v),
-  '#/gammes':     (v) => mountScales(v),
-  '#/metronome':  (v) => mountMetronome(v),
-  '#/accordeur':  (v) => mountTuner(v),
-  '#/game':       (v) => mountLevels(v),
+  '#/':              (v) => mountLanding(v),
+  '#/manche':        (v) => mountHome(v),
+  '#/accords':       (v) => mountChords(v),
+  '#/triades':       (v) => mountTriads(v),
+  '#/gammes':        (v) => mountScales(v),
+  '#/arpeges':       (v) => mountArpeges(v),
+  '#/caged':         (v) => mountCaged(v),
+  '#/progressions':  (v) => mountProgressions(v),
+  '#/metronome':     (v) => mountMetronome(v),
+  '#/accordeur':     (v) => mountTuner(v),
+  '#/game':          (v) => mountLevels(v),
 };
 
 let cleanup = null;
@@ -41,13 +47,16 @@ function parseGameLevel(hash) {
 }
 
 function setActive(hash) {
-  const navHash = hash.startsWith('#/game')      ? '#/game'
-                : hash.startsWith('#/manche')    ? '#/manche'
-                : hash.startsWith('#/accords')   ? '#/accords'
-                : hash.startsWith('#/triades')   ? '#/triades'
-                : hash.startsWith('#/gammes')    ? '#/gammes'
-                : hash.startsWith('#/metronome') ? '#/metronome'
-                : hash.startsWith('#/accordeur') ? '#/accordeur'
+  const navHash = hash.startsWith('#/game')         ? '#/game'
+                : hash.startsWith('#/manche')       ? '#/manche'
+                : hash.startsWith('#/accords')      ? '#/accords'
+                : hash.startsWith('#/triades')      ? '#/triades'
+                : hash.startsWith('#/gammes')       ? '#/gammes'
+                : hash.startsWith('#/arpeges')      ? '#/arpeges'
+                : hash.startsWith('#/caged')        ? '#/caged'
+                : hash.startsWith('#/progressions') ? '#/progressions'
+                : hash.startsWith('#/metronome')    ? '#/metronome'
+                : hash.startsWith('#/accordeur')    ? '#/accordeur'
                 : null;
   topLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === navHash));
   body.classList.toggle('is-landing', hash === '#/' || hash === '');
@@ -89,6 +98,9 @@ if (import.meta.hot) {
       './views/chords.js',
       './views/triads.js',
       './views/scales.js',
+      './views/arpeges.js',
+      './views/caged.js',
+      './views/progressions.js',
       './views/metronome.js',
       './views/tuner.js',
       './fretboard.js',
@@ -97,6 +109,7 @@ if (import.meta.hot) {
       './pitch.js',
       './progression.js',
       './theory.js',
+      './storage.js',
       './svg/svg-utils.js',
       './svg/mini-fretboard.js',
     ],
